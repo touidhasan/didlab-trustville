@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# secrets — never commit
+.env
+.env.*
+!.env.example
+*.key
+keystore/
+
+# foundry
+contracts/out/
+contracts/cache/
+contracts/lib/
+contracts/broadcast/*/31337/
+contracts/broadcast/**/dry-run/
+
+# misc
+.DS_Store
+*.log
+.vite/
+# NOTE: dist/ is committed on purpose — cPanel publishes it.

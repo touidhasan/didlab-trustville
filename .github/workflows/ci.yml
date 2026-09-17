@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Install libraries
+        run: |
+          forge install foundry-rs/forge-std --no-git
+          forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git
+      - run: forge build --sizes
+      - run: forge test -vv
+
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      - run: npm run build
+        working-directory: app
+      - name: dist/ must be committed and up to date
+        run: git diff --exit-code -- dist || (echo "::error::Run 'npm run build' and commit dist/" && exit 1)

@@ -1,0 +1,12 @@
+{
+  "name": "didlab-trustville",
+  "private": true,
+  "description": "Trustville — DIDLab blockchain showcase dApp (dapp.didlab.org)",
+  "license": "MIT",
+  "scripts": {
+    "setup": "npm --prefix app install",
+    "dev": "npm --prefix app run dev",
+    "build": "npm --prefix app run build",
+    "preview": "npm --prefix app run preview"
+  }
+}
