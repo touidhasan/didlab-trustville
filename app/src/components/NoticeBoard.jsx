@@ -1,19 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BaseError, ContractFunctionRevertedError, parseEventLogs } from 'viem';
-import { townNoticeBoardAbi } from '../abi/TownNoticeBoard.js';
+import { townNoticeBoardAbi } from '../abi/generated.js';
 import { contracts, explorerAddress, publicClient } from '../chain.js';
+import { useRefresh } from '../refresh.js';
+import { runTx } from '../tx.js';
 import TxPanel from './TxPanel.jsx';
 
 const address = contracts.TownNoticeBoard;
-
-function explain(e) {
-  if (e instanceof BaseError) {
-    const revert = e.walk((x) => x instanceof ContractFunctionRevertedError);
-    if (revert?.data?.errorName) return `Contract rejected it: ${revert.data.errorName}`;
-    return e.shortMessage;
-  }
-  return e?.message || String(e);
-}
 
 /** D0 warm-up: the first contract call every student makes. */
 export default function NoticeBoard({ wallet }) {
@@ -36,29 +28,27 @@ export default function NoticeBoard({ wallet }) {
     load().catch(() => {});
   }, [load]);
 
-  const post = async (ev) => {
+  // Reload when any module's transaction lands.
+  useRefresh(useCallback(() => {
+    load().catch(() => {});
+  }, [load]));
+
+  const post = (ev) => {
     ev.preventDefault();
     if (!wallet.walletClient) return;
-    setTx({ status: 'pending' });
-    try {
-      // Simulate first: catches reverts before MetaMask asks for a signature.
-      const { request } = await publicClient.simulateContract({
-        address,
-        abi: townNoticeBoardAbi,
-        functionName: 'post',
-        args: [text],
-        account: wallet.account,
-      });
-      const hash = await wallet.walletClient.writeContract(request);
-      setTx({ hash, status: 'pending' });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      const events = parseEventLogs({ abi: townNoticeBoardAbi, logs: receipt.logs });
-      setTx({ hash, status: receipt.status, receipt, events });
-      setText('');
-      load();
-    } catch (e) {
-      setTx((t) => ({ ...t, status: 'error', error: explain(e) }));
-    }
+    // runTx simulates first, so a doomed transaction never reaches MetaMask.
+    return runTx({
+      wallet,
+      address,
+      abi: townNoticeBoardAbi,
+      functionName: 'post',
+      args: [text],
+      setTx,
+      onDone: async () => {
+        setText('');
+        await load();
+      },
+    });
   };
 
   const ready = wallet.account && wallet.onDidlab;

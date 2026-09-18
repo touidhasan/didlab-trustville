@@ -115,6 +115,20 @@ p { margin: 0 0 0.8em; }
 .tx-reverted, .tx-error { border-color: var(--red); }
 .event { margin: 4px 0; padding: 8px; background: var(--card); border-radius: 8px; white-space: pre-wrap; font-size: 0.82rem; }
 
+/* modules */
+.module { padding: 14px 0; border-top: 1px solid var(--line); }
+.module:first-child { border-top: 0; padding-top: 0; }
+.module h3 { font-size: 1rem; }
+.ok { color: var(--green); font-weight: 600; }
+.stamps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.stamp {
+  font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+  background: rgba(31, 138, 76, 0.12); color: var(--green); border: 1px solid rgba(31, 138, 76, 0.3);
+}
+.figures { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 4px; }
+.figures > div { display: grid; }
+.figure { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+
 /* town map */
 .stops { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .stop { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }

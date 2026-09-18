@@ -1,6 +1,8 @@
+import Bank from './components/Bank.jsx';
 import ChainStatus from './components/ChainStatus.jsx';
 import NoticeBoard from './components/NoticeBoard.jsx';
 import Onboarding from './components/Onboarding.jsx';
+import TownHall from './components/TownHall.jsx';
 import TownMap from './components/TownMap.jsx';
 import { EXPLORER, FAUCET_URL } from './chain.js';
 import { useWallet } from './wallet.js';
@@ -45,6 +47,8 @@ export default function App() {
 
         <div className="wrap stack">
           <Onboarding wallet={wallet} />
+          <TownHall wallet={wallet} />
+          <Bank wallet={wallet} />
           <NoticeBoard wallet={wallet} />
           <TownMap />
 

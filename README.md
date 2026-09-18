@@ -41,10 +41,37 @@ Contracts (requires [Foundry](https://book.getfoundry.sh)):
 
 ```bash
 cd contracts
-forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git   # first time only
-forge build
-forge test
+forge install foundry-rs/forge-std --no-git                          # first time only
+forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git    # first time only
+forge build && forge test
+cd .. && npm run sync-abi        # refresh app/src/abi/generated.js after changing a contract
 ```
+
+## Keys
+
+Two keys, never one:
+
+| Key | Holds | Lives in |
+| --- | --- | --- |
+| Deployer | Nothing after a deploy finishes | Env var or keystore on the build machine |
+| Town admin (`TOWN_ADMIN`) | `DEFAULT_ADMIN_ROLE` on every contract | Encrypted Foundry keystore |
+
+Create the deployer key once, encrypted:
+
+```bash
+cast wallet import didlab-deployer --interactive
+```
+
+Deploy the town (the script hands all privileges to `TOWN_ADMIN`, then renounces its own):
+
+```bash
+cd contracts
+export TOWN_ADMIN=0xYourAdminAddress
+forge script script/DeployTown.s.sol --rpc-url didlab --broadcast --account didlab-deployer
+```
+
+Addresses are written into `deployments/252501.json` automatically. Never commit a private
+key, and never put one in the cPanel tenant's Env tab.
 
 ## Release
 

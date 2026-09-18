@@ -57,7 +57,7 @@ export default function Onboarding({ wallet }) {
   return (
     <section className="card" id="start">
       <div className="card-head">
-        <h2>Become a resident</h2>
+        <h2>Set up your wallet</h2>
         <p className="muted">Five steps, about five minutes. Every Trustville stop needs these.</p>
       </div>
 
