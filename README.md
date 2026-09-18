@@ -25,6 +25,7 @@ app/                    Vite + React frontend (source)
 contracts/              Foundry project; one folder per module under src/
 deployments/252501.json Contract addresses on the DIDLab chain (read by the app)
 services/               API, indexer, oracle (added in D4)
+proxmox/                scripts that create the VM hosting dapp.didlab.org
 docs/modules/           One README per module
 dist/                   Built site — this is what cPanel publishes
 ```
@@ -72,6 +73,14 @@ forge script script/DeployTown.s.sol --rpc-url didlab --broadcast --account didl
 
 Addresses are written into `deployments/252501.json` automatically. Never commit a private
 key, and never put one in the cPanel tenant's Env tab.
+
+## Hosting
+
+The site is served at dapp.didlab.org. Two options, both fed by this repo's committed `dist/`:
+
+- **cPanel tenant** — Tenants → **dapp** → Deploy from Git (no build step on the server).
+- **Dedicated VM** — `proxmox/create-dapp-vm.sh` builds a Debian VM with nginx, atomic
+  releases, `dapp-deploy` / `dapp-rollback`, and a Cloudflare tunnel. See `proxmox/README.md`.
 
 ## Release
 
