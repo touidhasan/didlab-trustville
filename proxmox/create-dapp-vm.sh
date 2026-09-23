@@ -106,7 +106,9 @@ SSH_KEY_LINE="$(cat "$SSH_PUBKEY")"
 cat >"$USERDATA" <<YAML
 #cloud-config
 hostname: ${VM_NAME}
-fqdn: ${SITE_HOST}
+# NOT the site hostname: cloud-init maps the fqdn to 127.0.1.1 in /etc/hosts, which
+# would make the VM resolve ${SITE_HOST} to itself and never reach the real site.
+fqdn: ${VM_NAME}.local
 manage_etc_hosts: true
 package_update: true
 
