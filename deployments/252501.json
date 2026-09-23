@@ -1,6 +1,11 @@
 {
   "chainId": 252501,
   "network": "DIDLab",
-  "updated": null,
-  "contracts": {}
+  "updated": 1790207435,
+  "contracts": {
+    "ResidentRegistry": "0x30209DE180f649ea47C959dD611404ca87fdbF5e",
+    "TrustvillePassport": "0xA046E4D575cE37D5024893f590D3FF74690e8211",
+    "TownToken": "0x9a17Fa48aa787De5CB470214D28af89CaFf7762c",
+    "TownBank": "0x01A0bfEe1875c78Adf1179797e5f06212Bf6d8A4"
+  }
 }
