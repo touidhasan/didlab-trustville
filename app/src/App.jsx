@@ -1,5 +1,6 @@
 import Bank from './components/Bank.jsx';
 import ChainStatus from './components/ChainStatus.jsx';
+import Market from './components/Market.jsx';
 import NoticeBoard from './components/NoticeBoard.jsx';
 import Onboarding from './components/Onboarding.jsx';
 import TownHall from './components/TownHall.jsx';
@@ -49,6 +50,7 @@ export default function App() {
           <Onboarding wallet={wallet} />
           <TownHall wallet={wallet} />
           <Bank wallet={wallet} />
+          <Market wallet={wallet} />
           <NoticeBoard wallet={wallet} />
           <TownMap />
 

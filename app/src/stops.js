@@ -16,7 +16,7 @@ export const stops = [
     name: 'Market',
     problem: 'Buying from strangers, and knowing where goods came from',
     modules: ['Product provenance', 'Escrow', 'Sealed-bid auction'],
-    phase: 'D2',
+    phase: 'now',
   },
   {
     name: 'College',

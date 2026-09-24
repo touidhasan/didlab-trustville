@@ -12,7 +12,9 @@ export default function TownMap() {
           <article key={s.name} className="stop">
             <div className="stop-top">
               <h3>{s.name}</h3>
-              <span className="badge">Opens in {s.phase}</span>
+              <span className={`badge ${s.phase === 'now' ? 'badge-open' : ''}`}>
+                {s.phase === 'now' ? 'Open now' : `Opens in ${s.phase}`}
+              </span>
             </div>
             <p className="stop-problem">{s.problem}</p>
             <ul>

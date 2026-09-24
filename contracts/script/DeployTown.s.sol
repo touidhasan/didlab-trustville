@@ -26,7 +26,10 @@ contract DeployTown is Script {
         uint256 maxSupply = vm.envOr("TVD_MAX_SUPPLY", uint256(10_000_000 ether));
 
         vm.startBroadcast();
-        address deployer = msg.sender;
+        // Ask the VM who is broadcasting rather than reading msg.sender: with a
+        // keystore account, Foundry refuses msg.sender inside a broadcast unless
+        // --sender is passed, and this works either way.
+        (, address deployer,) = vm.readCallers();
         require(townAdmin != address(0), "TOWN_ADMIN not set");
         require(townAdmin != deployer, "TOWN_ADMIN must differ from the deployer key");
 

@@ -129,6 +129,10 @@ p { margin: 0 0 0.8em; }
 .figures > div { display: grid; }
 .figure { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
 
+.badge-open { background: rgba(31, 138, 76, 0.14); color: var(--green); }
+.small-btn { padding: 5px 12px; font-size: 0.85rem; margin-top: 6px; }
+.notices li .row { margin-top: 4px; }
+
 /* town map */
 .stops { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .stop { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
