@@ -20,3 +20,4 @@ contracts/broadcast/**/dry-run/
 *.log
 .vite/
 # NOTE: dist/ is committed on purpose — cPanel publishes it.
+services/rain-reporter/keys/
