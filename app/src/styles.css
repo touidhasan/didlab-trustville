@@ -94,8 +94,9 @@ p { margin: 0 0 0.8em; }
 
 /* notice board */
 .board { display: grid; grid-template-columns: 1fr; gap: 20px; }
-@media (min-width: 820px) { .board { grid-template-columns: 1.3fr 1fr; } }
-.post-form { display: flex; gap: 8px; margin-bottom: 8px; }
+@media (min-width: 820px) { .board { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
+.post-form { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.post-form input { min-width: 120px; }
 .post-form input {
   flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
   font: inherit; background: var(--bg); color: var(--ink);

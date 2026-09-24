@@ -32,7 +32,7 @@ currency).
 | D0 | Site, wallet onboarding, notice board | Live |
 | D1 | 1–3 Resident identity, Passport, Town token | Live · tag `d1` |
 | D2a | 4–6 Provenance, Escrow, Sealed-bid auction | Live · tag `d2a` |
-| D2b | 7–8 Certificates, ERC-1155 tickets | Next |
+| D2b | 7–8 Certificates, ERC-1155 tickets | Built, awaiting deploy |
 | D3 | 9–12 Housing and Council | Planned |
 | D4 | 13–15 Charity, Insurer, DeFi | Planned |
 | D5 | Instructor progress view, lab handouts | Planned |

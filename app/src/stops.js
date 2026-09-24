@@ -22,7 +22,7 @@ export const stops = [
     name: 'College',
     problem: 'Fake diplomas and forged tickets',
     modules: ['Verifiable certificates', 'Event tickets (ERC-1155)'],
-    phase: 'D2',
+    phase: 'now',
   },
   {
     name: 'Housing',

@@ -16,6 +16,8 @@ const NAMES = [
   'ProductRegistry',
   'TownEscrow',
   'SealedAuction',
+  'CertificateRegistry',
+  'EventTickets',
 ];
 
 const out = [
