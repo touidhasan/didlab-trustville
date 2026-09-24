@@ -2,7 +2,7 @@
 
 **Live:** https://dapp.didlab.org · **Chain:** DIDLab (ID 252501) · **Explorer:** https://explorer.didlab.org
 
-Trustville is a fictional small town where every everyday trust problem is solved with a
+Trustville is a fictional small town where everyday trust problem is solved with a
 blockchain feature. It is the showcase dApp for the DIDLab Blockchain course: students walk
 through the town with their own MetaMask wallet, watch each transaction land on chain, and
 fork any module as the starting point for their group project.
