@@ -21,6 +21,8 @@ contract SealedAuction is Stamping {
     using SafeERC20 for IERC20;
 
     uint16 public constant MODULE_ID = 6;
+    uint64 public constant MIN_PHASE = 30 seconds;
+    uint64 public constant MAX_PHASE = 7 days;
 
     struct Auction {
         address seller;
@@ -67,8 +69,10 @@ contract SealedAuction is Stamping {
         external
         returns (uint256 id)
     {
-        if (commitSecs < 1 minutes || revealSecs < 1 minutes) revert BadPhaseLength();
-        if (commitSecs > 7 days || revealSecs > 7 days) revert BadPhaseLength();
+        // Bounds only: the seller picks the pace. Thirty seconds is enough to demonstrate
+        // commit-reveal in a lecture; a week suits a real sale.
+        if (commitSecs < MIN_PHASE || revealSecs < MIN_PHASE) revert BadPhaseLength();
+        if (commitSecs > MAX_PHASE || revealSecs > MAX_PHASE) revert BadPhaseLength();
 
         uint64 commitEnd = uint64(block.timestamp) + commitSecs;
         _auctions.push(

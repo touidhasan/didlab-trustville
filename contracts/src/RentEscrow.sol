@@ -25,8 +25,12 @@ contract RentEscrow is AccessControl, Stamping {
     bytes32 public constant ARBITER_ROLE = keccak256("ARBITER_ROLE");
     uint16 public constant MODULE_ID = 10;
 
-    uint64 public constant MIN_TERM = 1 hours; // short, so a class can watch a full lease
-    uint64 public constant CLAIM_WINDOW = 1 hours;
+    // Bounds, not fixed values: an instructor can run a 5-minute lease in a lab and a
+    // week-long one for homework, and students must reason about what the numbers mean.
+    uint64 public constant MIN_TERM = 5 minutes;
+    uint64 public constant MAX_TERM = 365 days;
+    uint64 public constant MIN_CLAIM_WINDOW = 2 minutes;
+    uint64 public constant MAX_CLAIM_WINDOW = 30 days;
 
     enum State {
         None,
@@ -44,6 +48,7 @@ contract RentEscrow is AccessControl, Stamping {
         uint256 deposit;
         uint256 claimAmount;
         uint64 endsAt;
+        uint64 claimWindow;
         uint32 rentPaid; // number of payments made
         State state;
         string claimReason;
@@ -67,7 +72,8 @@ contract RentEscrow is AccessControl, Stamping {
     error NotTheTenant();
     error NotTheLandlord();
     error WrongState(State state);
-    error TermTooShort();
+    error TermOutOfRange(uint64 min, uint64 max);
+    error ClaimWindowOutOfRange(uint64 min, uint64 max);
     error TenantIsLandlord();
     error LeaseNotEnded(uint64 endsAt);
     error LeaseEnded();
@@ -85,14 +91,21 @@ contract RentEscrow is AccessControl, Stamping {
     }
 
     /// The landlord must hold the deed for the property being let.
-    function offerLease(uint256 deedId, address tenant, uint256 rent, uint256 deposit, uint64 term)
-        external
-        returns (uint256 id)
-    {
+    function offerLease(
+        uint256 deedId,
+        address tenant,
+        uint256 rent,
+        uint256 deposit,
+        uint64 term,
+        uint64 claimWindow
+    ) external returns (uint256 id) {
         address owner = deeds.ownerOf(deedId);
         if (owner != msg.sender) revert NotTheDeedOwner(owner);
         if (tenant == msg.sender) revert TenantIsLandlord();
-        if (term < MIN_TERM) revert TermTooShort();
+        if (term < MIN_TERM || term > MAX_TERM) revert TermOutOfRange(MIN_TERM, MAX_TERM);
+        if (claimWindow < MIN_CLAIM_WINDOW || claimWindow > MAX_CLAIM_WINDOW) {
+            revert ClaimWindowOutOfRange(MIN_CLAIM_WINDOW, MAX_CLAIM_WINDOW);
+        }
 
         _leases.push(
             Lease({
@@ -103,6 +116,7 @@ contract RentEscrow is AccessControl, Stamping {
                 deposit: deposit,
                 claimAmount: 0,
                 endsAt: uint64(block.timestamp) + term,
+                claimWindow: claimWindow,
                 rentPaid: 0,
                 state: State.Offered,
                 claimReason: ""
@@ -148,7 +162,7 @@ contract RentEscrow is AccessControl, Stamping {
         if (msg.sender != l.landlord) revert NotTheLandlord();
         if (l.state != State.Active) revert WrongState(l.state);
         if (block.timestamp < l.endsAt) revert LeaseNotEnded(l.endsAt);
-        if (block.timestamp >= l.endsAt + CLAIM_WINDOW) revert ClaimWindowClosed(l.endsAt + CLAIM_WINDOW);
+        if (block.timestamp >= l.endsAt + l.claimWindow) revert ClaimWindowClosed(l.endsAt + l.claimWindow);
         if (amount > l.deposit) revert ClaimTooLarge(l.deposit);
 
         l.state = State.Claimed;
@@ -162,7 +176,7 @@ contract RentEscrow is AccessControl, Stamping {
         Lease storage l = _at(id);
         if (msg.sender != l.tenant) revert NotTheTenant();
         if (l.state != State.Active) revert WrongState(l.state);
-        uint64 until = l.endsAt + CLAIM_WINDOW;
+        uint64 until = l.endsAt + l.claimWindow;
         if (block.timestamp < until) revert ClaimWindowOpen(until);
 
         l.state = State.Settled;

@@ -20,6 +20,7 @@ const MODULE_NAMES = {
   8: 'Tickets',
   9: 'Deeds',
   10: 'Rent escrow',
+  11: 'Treasury',
 };
 
 /** Modules 1 and 2: identity you control, and a soulbound record of what you did. */

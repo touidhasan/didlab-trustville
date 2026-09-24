@@ -34,7 +34,7 @@ export const stops = [
     name: 'Council',
     problem: 'Opaque spending and votes nobody can check',
     modules: ['Multisig treasury', 'DAO governance'],
-    phase: 'D3',
+    phase: 'now',
   },
   {
     name: 'Charity',

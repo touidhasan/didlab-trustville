@@ -33,8 +33,8 @@ currency).
 | D1 | 1–3 Resident identity, Passport, Town token | Live · tag `d1` |
 | D2a | 4–6 Provenance, Escrow, Sealed-bid auction | Live · tag `d2a` |
 | D2b | 7–8 Certificates, ERC-1155 tickets | Live · tag `d2b` |
-| D3a | 9–10 Property deeds, Rent escrow (+ voting wrapper) | Built, awaiting deploy |
-| D3b | 11–12 Multisig treasury, DAO governance | Next |
+| D3a | 9–10 Property deeds, Rent escrow (+ voting wrapper) | Live · tag `d3a` |
+| D3b | 11–12 Multisig treasury, DAO governance | Built, awaiting deploy |
 | D4 | 13–15 Charity, Insurer, DeFi | Planned |
 | D5 | Instructor progress view, lab handouts | Planned |
 | D6 | 16 Zero-knowledge proofs | Stretch |
@@ -52,6 +52,9 @@ currency).
 | SealedAuction | `0x029Ad3CD878071c6389bA891EfFB42C88c14b04a` | D2a |
 | CertificateRegistry | `0x42F5198AfAa5F639D3F20eB02ff89311FC51F7a4` | D2b |
 | EventTickets | `0x2Ed7004e740bC7a415B8A030723224ca5419cd94` | D2b |
+| PropertyDeeds | `0x25628280fFE164F8De37150F34F536b129885078` | D3a |
+| RentEscrow | *redeployed in D3b — durations are now per-lease* | D3a |
+| VoteToken | *redeployed in D3b — timestamp clock* | D3a |
 
 The app reads these from `deployments/252501.json`; redeploying a contract never needs a
 code change.
@@ -157,6 +160,20 @@ holds a key or signs anything.
 3. `git push`, then `git tag <phase> && git push --tags`.
 4. On the web host: `sudo dapp-deploy` (or redeploy from Git in cPanel).
 5. `sudo dapp-rollback` returns to the previous release if something is wrong.
+
+## Timings
+
+Durations are bounded, not fixed, so the same contracts suit a lab and a homework week.
+
+| Setting | Bounds | Lab default |
+| --- | --- | --- |
+| Lease term | 5 min – 365 days | 15 min |
+| Deposit claim window | 2 min – 30 days | 5 min |
+| Auction commit / reveal | 30 s – 7 days each | 5 min |
+| Governance delay / voting / timelock | set at deployment | 1 min / 10 min / 2 min |
+
+Governance timings are deployment-time settings: `VOTING_DELAY`, `VOTING_PERIOD` and
+`TIMELOCK_DELAY` (seconds) on `DeployCouncil.s.sol`.
 
 ## Rules
 

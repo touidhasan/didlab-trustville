@@ -29,6 +29,8 @@ export default function Housing({ wallet }) {
   const [rent, setRent] = useState('');
   const [deposit, setDeposit] = useState('');
   const [deedId, setDeedId] = useState('');
+  const [termMins, setTermMins] = useState('15');
+  const [windowMins, setWindowMins] = useState('5');
 
   const load = useCallback(async () => {
     if (!deeds) return;
@@ -111,7 +113,14 @@ export default function Housing({ wallet }) {
       address: leases,
       abi: rentEscrowAbi,
       functionName: 'offerLease',
-      args: [BigInt(deedId), tenant, parseUnits(rent || '0', 18), parseUnits(deposit || '0', 18), 7200],
+      args: [
+        BigInt(deedId),
+        tenant,
+        parseUnits(rent || '0', 18),
+        parseUnits(deposit || '0', 18),
+        BigInt(Math.round(Number(termMins) * 60)),
+        BigInt(Math.round(Number(windowMins) * 60)),
+      ],
       onDone: async () => {
         setTenant('');
         setRent('');
@@ -161,7 +170,7 @@ export default function Housing({ wallet }) {
   };
 
   const now = Math.floor(Date.now() / 1000);
-  const CLAIM_WINDOW = 3600;
+
 
   return (
     <section className="card" id="housing">
@@ -214,14 +223,17 @@ export default function Housing({ wallet }) {
           <div className="module">
             <h3>10 · Rent escrow</h3>
             <p className="muted small">
-              The deposit is locked for the lease. Afterwards the landlord has one hour to claim against it, in
-              public, with a reason — otherwise the tenant simply takes it back.
+              The deposit is locked for the lease. Afterwards the landlord has the claim window to claim against
+              it, in public and with a reason — otherwise the tenant simply takes it back. You choose both
+              durations: 15 and 5 minutes suit a lab, longer suits homework.
             </p>
             <form onSubmit={offer} className="post-form">
               <input value={deedId} onChange={(e) => setDeedId(e.target.value)} placeholder="Deed #" inputMode="numeric" style={{ maxWidth: 90 }} disabled={!ready} />
               <input value={tenant} onChange={(e) => setTenant(e.target.value)} placeholder="0x… tenant" disabled={!ready} />
               <input value={rent} onChange={(e) => setRent(e.target.value)} placeholder="Rent" inputMode="decimal" style={{ maxWidth: 90 }} disabled={!ready} />
               <input value={deposit} onChange={(e) => setDeposit(e.target.value)} placeholder="Deposit" inputMode="decimal" style={{ maxWidth: 100 }} disabled={!ready} />
+              <input value={termMins} onChange={(e) => setTermMins(e.target.value)} placeholder="Term (min)" inputMode="numeric" style={{ maxWidth: 110 }} disabled={!ready} />
+              <input value={windowMins} onChange={(e) => setWindowMins(e.target.value)} placeholder="Claim window (min)" inputMode="numeric" style={{ maxWidth: 140 }} disabled={!ready} />
               <button className="btn" disabled={!ready || !deedId || !isAddress(tenant)}>
                 Offer lease
               </button>
@@ -231,7 +243,7 @@ export default function Housing({ wallet }) {
               {myLeases.map((l) => {
                 const isTenant = account && l.tenant.toLowerCase() === account.toLowerCase();
                 const ended = now >= Number(l.endsAt);
-                const windowOver = now >= Number(l.endsAt) + CLAIM_WINDOW;
+                const windowOver = now >= Number(l.endsAt) + Number(l.claimWindow);
                 return (
                   <li key={l.id.toString()}>
                     <span>

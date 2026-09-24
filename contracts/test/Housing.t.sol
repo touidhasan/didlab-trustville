@@ -128,7 +128,7 @@ contract HousingTest is Test {
     function _lease(uint256 rent, uint256 deposit) internal returns (uint256 id, uint256 deedId) {
         deedId = _deed();
         vm.prank(owner);
-        id = leases.offerLease(deedId, tenant, rent, deposit, 2 hours);
+        id = leases.offerLease(deedId, tenant, rent, deposit, 2 hours, 1 hours);
     }
 
     function _accept(uint256 id, uint256 deposit) internal {
@@ -142,7 +142,7 @@ contract HousingTest is Test {
         uint256 deedId = _deed();
         vm.prank(buyer);
         vm.expectRevert(abi.encodeWithSelector(RentEscrow.NotTheDeedOwner.selector, owner));
-        leases.offerLease(deedId, tenant, 1 ether, 1 ether, 2 hours);
+        leases.offerLease(deedId, tenant, 1 ether, 1 ether, 2 hours, 1 hours);
     }
 
     function test_DepositSitsInTheContractNotWithTheLandlord() public {
@@ -184,7 +184,7 @@ contract HousingTest is Test {
     function test_TenantCannotTakeItBackDuringTheClaimWindow() public {
         (uint256 id,) = _lease(0, 100 ether);
         _accept(id, 100 ether);
-        uint64 until = leases.get(id).endsAt + leases.CLAIM_WINDOW();
+        uint64 until = leases.get(id).endsAt + leases.get(id).claimWindow;
 
         vm.warp(leases.get(id).endsAt + 1);
         vm.prank(tenant);
@@ -205,7 +205,7 @@ contract HousingTest is Test {
     function test_LandlordCannotClaimAfterTheWindow() public {
         (uint256 id,) = _lease(0, 100 ether);
         _accept(id, 100 ether);
-        uint64 until = leases.get(id).endsAt + leases.CLAIM_WINDOW();
+        uint64 until = leases.get(id).endsAt + leases.get(id).claimWindow;
 
         vm.warp(until + 1);
         vm.prank(owner);
@@ -308,13 +308,15 @@ contract HousingTest is Test {
         votes.depositAndSelfDelegate(400 ether);
         vm.stopPrank();
 
-        vm.roll(block.number + 1);
-        uint256 snapshot = block.number - 1;
+        // The token counts by TIMESTAMP (ERC-6372), so snapshots are moments, not blocks.
+        assertEq(votes.CLOCK_MODE(), "mode=timestamp");
+        uint256 snapshot = block.timestamp;
+        vm.warp(block.timestamp + 10);
 
         vm.prank(owner);
         votes.withdrawTo(owner, 400 ether); // sell up after the snapshot
 
-        vm.roll(block.number + 1);
+        vm.warp(block.timestamp + 10);
         assertEq(votes.getPastVotes(owner, snapshot), 400 ether); // history is what counts
         assertEq(votes.getVotes(owner), 0);
     }

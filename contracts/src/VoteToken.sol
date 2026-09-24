@@ -37,6 +37,19 @@ contract VoteToken is ERC20, ERC20Permit, ERC20Votes, ERC20Wrapper {
         _delegate(msg.sender, msg.sender);
     }
 
+    /// ERC-6372: count votes by TIMESTAMP, not block number.
+    /// With the default block-number clock, "a 10 minute vote" has to be expressed in
+    /// blocks, so it silently changes length whenever block time does. Timestamps make
+    /// governance periods mean what they say on any chain.
+    function clock() public view override returns (uint48) {
+        return uint48(block.timestamp);
+    }
+
+    // solhint-disable-next-line func-name-mixedcase
+    function CLOCK_MODE() public pure override returns (string memory) {
+        return "mode=timestamp";
+    }
+
     function decimals() public view override(ERC20, ERC20Wrapper) returns (uint8) {
         return super.decimals();
     }

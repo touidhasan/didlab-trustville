@@ -21,6 +21,9 @@ const NAMES = [
   'PropertyDeeds',
   'RentEscrow',
   'VoteToken',
+  'TownTreasury',
+  'TownGovernor',
+  'TownTimelock',
 ];
 
 const out = [

@@ -1,6 +1,7 @@
 import Bank from './components/Bank.jsx';
 import ChainStatus from './components/ChainStatus.jsx';
 import College from './components/College.jsx';
+import Council from './components/Council.jsx';
 import Housing from './components/Housing.jsx';
 import Market from './components/Market.jsx';
 import NoticeBoard from './components/NoticeBoard.jsx';
@@ -55,6 +56,7 @@ export default function App() {
           <Market wallet={wallet} />
           <College wallet={wallet} />
           <Housing wallet={wallet} />
+          <Council wallet={wallet} />
           <NoticeBoard wallet={wallet} />
           <TownMap />
 
