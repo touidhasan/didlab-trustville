@@ -32,8 +32,9 @@ currency).
 | D0 | Site, wallet onboarding, notice board | Live |
 | D1 | 1–3 Resident identity, Passport, Town token | Live · tag `d1` |
 | D2a | 4–6 Provenance, Escrow, Sealed-bid auction | Live · tag `d2a` |
-| D2b | 7–8 Certificates, ERC-1155 tickets | Built, awaiting deploy |
-| D3 | 9–12 Housing and Council | Planned |
+| D2b | 7–8 Certificates, ERC-1155 tickets | Live · tag `d2b` |
+| D3a | 9–10 Property deeds, Rent escrow (+ voting wrapper) | Built, awaiting deploy |
+| D3b | 11–12 Multisig treasury, DAO governance | Next |
 | D4 | 13–15 Charity, Insurer, DeFi | Planned |
 | D5 | Instructor progress view, lab handouts | Planned |
 | D6 | 16 Zero-knowledge proofs | Stretch |
@@ -49,6 +50,8 @@ currency).
 | ProductRegistry | `0x242A011d333c2FEfb3cF82ab8104916282CaD8Ce` | D2a |
 | TownEscrow | `0x397B5783AD4De4004274be14544cd186eABa57D5` | D2a |
 | SealedAuction | `0x029Ad3CD878071c6389bA891EfFB42C88c14b04a` | D2a |
+| CertificateRegistry | `0x42F5198AfAa5F639D3F20eB02ff89311FC51F7a4` | D2b |
+| EventTickets | `0x2Ed7004e740bC7a415B8A030723224ca5419cd94` | D2b |
 
 The app reads these from `deployments/252501.json`; redeploying a contract never needs a
 code change.
@@ -61,8 +64,8 @@ code change.
 | Bank | 3 Town token (ERC-20) · 15 Swap and lending | D1 / D4 |
 | Market | 4 Product provenance · 5 Escrow · 6 Sealed-bid auction | D2a |
 | College | 7 Verifiable certificates · 8 Event tickets (ERC-1155) | D2b |
-| Housing | 9 Property deeds (ERC-721) · 10 Rent escrow | D3 |
-| Council | 11 Multisig treasury · 12 DAO governance | D3 |
+| Housing | 9 Property deeds (ERC-721) · 10 Rent escrow | D3a |
+| Council | 11 Multisig treasury · 12 DAO governance | D3b |
 | Charity | 13 Milestone crowdfunding | D4 |
 | Insurer | 14 Parametric insurance (oracle) | D4 |
 | Privacy Lab | 16 Zero-knowledge proofs | D6 (stretch) |

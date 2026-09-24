@@ -18,6 +18,9 @@ const NAMES = [
   'SealedAuction',
   'CertificateRegistry',
   'EventTickets',
+  'PropertyDeeds',
+  'RentEscrow',
+  'VoteToken',
 ];
 
 const out = [

@@ -28,7 +28,7 @@ export const stops = [
     name: 'Housing',
     problem: 'Deed fraud and lost security deposits',
     modules: ['Property deeds (ERC-721)', 'Rent escrow'],
-    phase: 'D3',
+    phase: 'now',
   },
   {
     name: 'Council',
