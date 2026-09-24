@@ -34,7 +34,7 @@ currency).
 | D2a | 4–6 Provenance, Escrow, Sealed-bid auction | Live · tag `d2a` |
 | D2b | 7–8 Certificates, ERC-1155 tickets | Live · tag `d2b` |
 | D3a | 9–10 Property deeds, Rent escrow (+ voting wrapper) | Live · tag `d3a` |
-| D3b | 11–12 Multisig treasury, DAO governance | Built, awaiting deploy |
+| D3b | 11–12 Multisig treasury, DAO governance | Live · tag `d3b` |
 | D4 | 13–15 Charity, Insurer, DeFi | Planned |
 | D5 | Instructor progress view, lab handouts | Planned |
 | D6 | 16 Zero-knowledge proofs | Stretch |
@@ -52,12 +52,26 @@ currency).
 | SealedAuction | `0x029Ad3CD878071c6389bA891EfFB42C88c14b04a` | D2a |
 | CertificateRegistry | `0x42F5198AfAa5F639D3F20eB02ff89311FC51F7a4` | D2b |
 | EventTickets | `0x2Ed7004e740bC7a415B8A030723224ca5419cd94` | D2b |
-| PropertyDeeds | `0x25628280fFE164F8De37150F34F536b129885078` | D3a |
-| RentEscrow | *redeployed in D3b — durations are now per-lease* | D3a |
-| VoteToken | *redeployed in D3b — timestamp clock* | D3a |
+| PropertyDeeds | `0x939FF9B685D1A9b65E55754E8dAD3f766377A436` | D3a |
+| RentEscrow | `0x8A1632baA01D304912369234CCc952BaC94db263` | D3a |
+| VoteToken (vTVD) | `0xb72174064b61Dd3Fa0c178E3E03fEF27c70DE3C6` | D3a |
+| TownTimelock | `0x60a03DfE71bf0e14B9128953E285B38b104eBbDA` | D3b |
+| TownGovernor | `0x8305D7D3aEBD53D3e09e01A82AF3162A3bf62b2f` | D3b |
+| TownTreasury | `0x5FDABa82F5E632B7E78EBa066De8F3655cB1D7F3` | D3b |
 
 The app reads these from `deployments/252501.json`; redeploying a contract never needs a
-code change.
+code change. It does need two follow-ups, and both are easy to forget: the new address
+must be granted `STAMPER_ROLE` on the Passport, or its module silently stops awarding
+stamps, and `dist/` must be rebuilt, because the addresses are baked in at build time.
+
+```bash
+# after any redeploy — every module contract must answer true
+cast call $PASSPORT "hasRole(bytes32,address)(bool)" $STAMPER <new address> --rpc-url $RPC
+```
+
+The Council holds its money in the **Timelock**, not the Governor and not the Treasury.
+`admin can schedule` must be `false`: if any key can schedule a transfer, the vote is
+decoration.
 
 ## Stops and modules
 
@@ -104,7 +118,7 @@ Contracts (requires [Foundry](https://book.getfoundry.sh)):
 cd contracts
 forge install foundry-rs/forge-std --no-git                          # first time only
 forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git    # first time only
-forge build && forge test                                            # 40 tests
+forge build && forge test                                            # 93 tests
 cd .. && npm run sync-abi        # refresh app/src/abi/generated.js after changing a contract
 ```
 
