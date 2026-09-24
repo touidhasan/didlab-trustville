@@ -81,6 +81,36 @@ silently changes length whenever block time does. This bites people on real depl
 2. Give the multisig a spending limit above which it must instead go to the DAO.
 3. Let the DAO add and remove multisig signers, so the slow body governs the fast one.
 
+## Deploying this stop (and a gas lesson worth keeping)
+
+The Council is the heaviest deployment in the project, and on DIDLab it runs into the
+block gas limit from both sides at once:
+
+- `TownGovernor` costs **4,039,001 gas** to deploy against a **4,700,000** block limit.
+  Foundry pads every estimate by 130% by default, which asks for 5.25M — over the limit,
+  so the transaction is rejected before it is even mined. Dropping to
+  `--gas-estimate-multiplier 105` gets it in.
+- But 105% is *too tight* for `renounceRole`. Clearing a storage slot earns a gas refund,
+  and the refund is applied after execution, not during: the node's estimate comes back
+  near the net cost while execution still needs the gross. At 105% the transaction runs
+  out of gas mid-call and reverts. The three `grantRole` calls just before it set a slot
+  from false to true — no refund, accurate estimate — which is why only the renounce fails.
+
+So the deployment is split. The contracts go out under a low multiplier, and the role
+changes are sent on their own with an explicit gas limit:
+
+```bash
+cast send $TIMELOCK "renounceRole(bytes32,address)" \
+  0x0000000000000000000000000000000000000000000000000000000000000000 $DEPLOYER \
+  --rpc-url didlab --legacy --gas-limit 120000 --account didlab-deployer
+```
+
+The general rule: an estimate is a measurement of one execution, not a guarantee about the
+next one. Pad it generously for anything that deletes state, and never let a script's
+*last* step be the one that gives away power — if it fails, you are left holding keys you
+believed you had dropped. `FinishCouncil.s.sol` exists for exactly that recovery, and it
+refuses to run while the deployer is still the Timelock's admin.
+
 ## Security checklist
 
 - [ ] Can anyone reach the Timelock's funds without a passed proposal?
