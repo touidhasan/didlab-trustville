@@ -1,0 +1,43 @@
+[Unit]
+Description=Trustville rain reporter (%i station)
+Documentation=https://github.com/touidhasan/didlab-trustville/blob/main/services/rain-reporter/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rainreporter
+Group=rainreporter
+WorkingDirectory=/opt/rain-reporter
+
+# One file per station. It holds PRIVATE_KEY and, optionally, STATION / DROUGHT / LIE.
+# Root-owned and mode 600: the reporter reads it, nobody else can.
+EnvironmentFile=/etc/rain-reporter/%i.env
+Environment=STATION=%i
+
+ExecStart=/usr/bin/node /opt/rain-reporter/reporter.mjs
+
+Restart=always
+RestartSec=20s
+
+# A reporter signs with a hot key, so give it as little of the machine as possible: it
+# needs the network and its own key file, and nothing else on this host.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+CapabilityBoundingSet=
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rain-reporter-%i
+
+[Install]
+WantedBy=multi-user.target

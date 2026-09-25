@@ -1,0 +1,15 @@
+{
+  "name": "trustville-rain-reporter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "One oracle node for Trustville module 14: reads a (simulated) rain gauge and reports it on chain.",
+  "bin": { "rain-reporter": "reporter.mjs" },
+  "scripts": {
+    "start": "node reporter.mjs",
+    "once": "node reporter.mjs --once"
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  }
+}

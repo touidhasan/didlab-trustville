@@ -25,6 +25,8 @@ const NAMES = [
   'TownGovernor',
   'TownTimelock',
   'TownCharity',
+  'RainOracle',
+  'CropInsurance',
 ];
 
 const out = [
