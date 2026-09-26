@@ -1,0 +1,38 @@
+[Unit]
+Description=Trustville TRUST faucet
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trustfaucet
+Group=trustfaucet
+WorkingDirectory=/opt/trustville-faucet
+EnvironmentFile=/etc/trustville-faucet.env
+ExecStart=/usr/bin/node /opt/trustville-faucet/faucet.mjs
+Restart=always
+RestartSec=10s
+
+# The drip state is the only thing this service may write.
+StateDirectory=trustville-faucet
+ReadWritePaths=/var/lib/trustville-faucet
+
+# A hot key that signs unattended gets as little of the machine as possible.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=trustville-faucet
+
+[Install]
+WantedBy=multi-user.target

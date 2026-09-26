@@ -4,6 +4,7 @@ import { residentRegistryAbi, trustvillePassportAbi } from '../abi/generated.js'
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const registry = contracts.ResidentRegistry;
@@ -108,6 +109,7 @@ export default function TownHall({ wallet }) {
           Register as a resident, then mint a passport that records what you complete. The passport cannot be
           sold or transferred — that is what makes it worth anything.
         </p>
+        <GuideLinks ids={[1, 2]} />
       </div>
 
       <div className="board">

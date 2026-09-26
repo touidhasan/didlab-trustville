@@ -4,6 +4,7 @@ import { productRegistryAbi, sealedAuctionAbi, townEscrowAbi, townTokenAbi } fro
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const registry = contracts.ProductRegistry;
@@ -232,6 +233,7 @@ export default function Market({ wallet }) {
           Where goods change hands between people who have no reason to trust each other: a custody trail, an
           escrow that holds the money, and an auction where bids stay secret until everyone has committed.
         </p>
+        <GuideLinks ids={[4, 5, 6]} />
       </div>
 
       <div className="board">

@@ -11,7 +11,8 @@ import NoticeBoard from './components/NoticeBoard.jsx';
 import Onboarding from './components/Onboarding.jsx';
 import TownHall from './components/TownHall.jsx';
 import TownMap from './components/TownMap.jsx';
-import { EXPLORER, FAUCET_URL } from './chain.js';
+import { EXPLORER, FAUCET_URL, guideUrl } from './chain.js';
+import { MODULES, MODULE_INDEX } from './modules.js';
 import { useWallet } from './wallet.js';
 
 const REPO = 'https://github.com/touidhasan/didlab-trustville';
@@ -45,6 +46,9 @@ export default function App() {
               <a className="btn" href="#start">
                 Get started
               </a>
+              <a className="btn btn-ghost-light" href={guideUrl(MODULE_INDEX)} target="_blank" rel="noreferrer">
+                Read the guides
+              </a>
               <a className="btn btn-ghost-light" href={REPO} target="_blank" rel="noreferrer">
                 Read the code
               </a>
@@ -53,6 +57,58 @@ export default function App() {
         </section>
 
         <div className="wrap stack">
+          <section className="card learn" id="learn">
+            <div className="card-head">
+              <h2>How to learn from this town</h2>
+              <p className="muted">
+                Pressing the buttons takes an afternoon. Understanding why each contract is shaped the way it
+                is takes rather longer, and that is the part worth having — so every module has a written
+                guide, and every stop below links to its own.
+              </p>
+            </div>
+
+            <div className="board">
+              <div>
+                <div className="module">
+                  <h3>Each guide answers the same questions</h3>
+                  <p className="muted small">
+                    What the trust problem is. The one idea the module turns on. The two or three lines of
+                    Solidity that carry the design. What to do here, in order, and which events to look for on
+                    the explorer. <strong>When a plain database would have been the better choice.</strong> And
+                    what the contract did <strong>not</strong> fix — every module has a section on that,
+                    because knowing exactly where the guarantee stops is most of the skill.
+                  </p>
+                </div>
+
+                <div className="module">
+                  <h3>Suggested order</h3>
+                  <p className="muted small">
+                    Read the guide, walk the stop, then read the "what this does not fix" section again with
+                    the transaction in front of you. Modules build on each other: several of them take an
+                    earlier module's stated limitation as their starting problem.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <div className="module">
+                  <h3>All fifteen guides</h3>
+                  <p className="guide-links">
+                    {Object.entries(MODULES).map(([id, m]) => (
+                      <a key={id} href={guideUrl(m.slug)} target="_blank" rel="noreferrer">
+                        {id} · {m.title}
+                      </a>
+                    ))}
+                  </p>
+                  <p className="muted small">
+                    Module 15 ships a <strong>deliberate vulnerability</strong> and a test that exploits it
+                    successfully. Read its guide before its code.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <Onboarding wallet={wallet} />
           <TownHall wallet={wallet} />
           <Bank wallet={wallet} />

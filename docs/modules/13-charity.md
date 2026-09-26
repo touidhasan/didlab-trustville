@@ -1,114 +1,236 @@
-# Module 13 · Milestone crowdfunding
+# Module 13 · Charity
+
+| | |
+| --- | --- |
+| **Contract** | `TownCharity.sol` |
+| **Stop** | Charity |
+| **Pattern** | Milestone crowdfunding with pull refunds |
+| **Stamp** | Module 13 (awarded to the **donor** on pledging) |
 
 ## The problem
 
-You give £50 to a cause. Some weeks later there is a photograph and a thank-you email. Was
-the well dug? Was your £50 part of it, or did it pay for the email?
+You give money to a cause. Then what?
 
-Two separate failures hide inside that discomfort, and it is worth naming them before
-writing any code:
+Two failures dominate charitable giving, and they are different. **The campaign does not
+reach its target**, so the money is spent on a half-built well that helps nobody — the case
+Kickstarter's all-or-nothing rule exists to prevent. And **the money arrives but the work
+does not**, which no funding platform solves, because once the funds are released the
+donor's leverage is gone.
 
-1. **The campaign does not reach its goal**, but the money is already spent on the part of
-   the job that was affordable. Half a well is worth nothing.
-2. **The campaign reaches its goal** and the organiser is handed everything on day one,
-   with the work still entirely in the future.
+Traditional charity answers the second with audits, regulators and annual reports: slow,
+after the fact, and only as good as the auditor.
 
-The usual answer to both is a platform: it holds the money, decides when to release it,
-and charges four to eight per cent for doing so. That works. It also means the platform is
-now the thing everyone has to trust, and it can change its rules, fail, or simply keep the
-money while a dispute drags on.
+## The idea
 
-## Why a blockchain — and why only partly
+Two mechanisms stacked.
 
-A contract can hold the pledges and enforce the two rules above without anybody's
-permission, and every donor can read the rules before giving rather than taking them on
-faith. No platform, no fee, no discretion about *who* gets refunded.
+**All or nothing.** Pledges sit in the contract. Reach the goal by the deadline or every
+donor takes their money back in full.
 
-What it cannot do is tell whether the well exists. The contract sees a 32-byte hash. A hash
-proves the report has not been altered since it was posted; it proves nothing about whether
-the receipts inside it are real. Somebody still has to look.
+**Milestones.** The goal is split into two to five stages, declared up front, each with a
+description and an amount. Money is released one stage at a time, and only after the
+beneficiary posts evidence and an arbiter approves it. Reject a milestone and the campaign
+is cancelled — donors get back their share of everything not yet released.
 
-So this module is deliberately honest about its seams: the money is trustless, the
-judgement is not. The arbiter is a human role, and the interesting classroom question is
-who should hold it — the town, the donors, a randomly drawn panel, or the DAO from module
-12. Every answer has a failure mode, and a student who can name the failure mode of their
-own design has understood the module.
+The donor's leverage survives past the funding date. That is the part traditional
+crowdfunding does not have.
 
-A plain database would be fine for this if donors already trusted the organiser. That is
-the honest comparison: this design buys you the case where they do not.
+## Key terms
 
-## Design
+**Milestone.** A stage of work with a fixed amount attached. `Waiting → Submitted →
+Approved` or `Rejected`.
+
+**Evidence hash.** A `bytes32` — the hash of a report, photographs, receipts — anchored on
+chain while the documents stay off it. Same reasoning as modules 7 and 9.
+
+**Pro-rata refund.** When a campaign is cancelled mid-way, each donor gets back their share
+of what is *left*, not what they put in. Some money is already spent, and the loss is shared
+in proportion.
+
+**Pull payment.** Donors withdraw their own refunds. The contract never loops over a list of
+addresses paying them out — see module 6 for why.
+
+## How it works
 
 ```
-create(cause, goal, window, amounts[], what[])   milestones must sum to the goal
-pledge(id, amount)                               capped at exactly what is still needed
-closeFailed(id)                                  anyone, once the deadline passes
-submitEvidence(id, step, hash)                   beneficiary only
-approveMilestone(id, step)                       arbiter — releases one tranche
-rejectMilestone(id, step, reason)                arbiter — stops the campaign
-refund(id)                                       the donor takes their own money
+Raising ──goal met──▸ Funded ──all milestones approved──▸ Completed
+   │                    │
+   └─deadline passed──▸ Failed          └─a milestone rejected──▸ Cancelled
+       (full refunds)                        (pro-rata refunds)
 ```
 
-| State | Means | Money |
+| Function | Who | What |
 | --- | --- | --- |
-| Raising | goal not yet met, deadline not passed | locked |
-| Funded | goal met | released one milestone at a time |
-| Completed | every milestone approved | all paid out |
-| Failed | deadline passed under goal | refundable in full |
-| Cancelled | a milestone was rejected | the unreleased remainder is refundable pro rata |
+| `create(cause, goal, window, amounts[], what[])` | anyone | Milestones must sum **exactly** to the goal |
+| `pledge(id, amount)` | anyone | Capped at what is still needed |
+| `closeFailed(id)` | **anyone** | After the deadline, under goal |
+| `submitEvidence(id, step, evidence)` | the beneficiary | In order, one at a time |
+| `approveMilestone(id, step)` | `ARBITER_ROLE` | Releases that amount |
+| `rejectMilestone(id, step, reason)` | `ARBITER_ROLE` | Cancels the campaign |
+| `refund(id)` | each donor | Failed or Cancelled only |
+| `refundable(id, donor)` | view | What you can take, without sending a transaction |
 
-Three decisions carry most of the design:
+Bounds: window 5 minutes to 90 days; 2 to 5 milestones.
 
-**Pledges are capped at the remaining amount.** A pledge that would overshoot the goal is
-rejected with the exact remaining figure in the error. There is no surplus, so there is no
-argument about who owns it and no arithmetic a donor has to trust.
+**Milestones must sum to the goal, exactly:**
 
-**Every payment is a pull.** Refunds are claimed by the donor, one transaction each. The
-tempting alternative — loop over the donors and pay them all — puts every donor's money at
-the mercy of the least cooperative one: a single recipient whose `transfer` reverts freezes
-the entire loop, permanently. This is the shape behind the famous reentrancy exercises, and
-avoiding it is a habit worth forming before it is a vulnerability worth exploiting.
+```solidity
+if (sum != goal) revert MilestonesDoNotSumToGoal(sum, goal);
+```
 
-**Approved tranches stay paid.** When a campaign is cancelled at milestone 2, the donors
-get back what was never released, not what was never spent. The work behind milestone 1 was
-done and accepted; clawing it back would make the approval meaningless. The refund formula
-is therefore `pledged × (raised − released) / raised`, and integer division means the last
-few wei stay in the contract as dust — a real and unavoidable property worth showing
-students rather than hiding.
+No rounding, no slack, no leftover pot. If the arithmetic a donor checks is not the
+arithmetic the contract does, the contract is lying by omission.
 
-## Try it
+## The detail that matters
 
-1. **Open a campaign** with two milestones, a short window, and a small goal.
-2. **Pledge from a second account.** Try to pledge more than is left: the error tells you
-   exactly how much the campaign still needs.
-3. **Meet the goal**, then check the beneficiary's balance. It has not changed. Meeting the
-   goal is not being paid.
-4. **Submit evidence** for milestone 1 as the beneficiary, and approve it as the arbiter.
-   Exactly one tranche moves; watch the contract's balance on the explorer.
-5. **Reject milestone 2.** Then, from each donor account, take the refund and check the
-   arithmetic yourself: two donors who gave 200 and 100 get back 133.33 and 66.66 of the
-   remaining 200.
-6. **Run a campaign that fails.** Let the deadline pass, call `closeFailed` from an account
-   with no stake in it at all — that is allowed on purpose — and take the full refunds.
-7. Try to refund twice. Try to approve your own milestone. Try to pay a milestone that has
-   no evidence. Each refusal is a line of the design.
+**Pledges are capped at the remaining amount:**
 
-## Extend it
+```solidity
+uint256 remaining = c.goal - c.raised;
+if (amount > remaining) revert Overfunded(remaining);
+```
 
-1. **Replace the arbiter with the DAO.** Make `ARBITER_ROLE` the Timelock from module 12,
-   so releasing a tranche needs a vote. Time a release. Is it better?
-2. **Add a deadline per milestone.** If the beneficiary posts no evidence within it, donors
-   can cancel without needing the arbiter at all. Who does this protect, and from whom?
-3. **Let a donor withdraw while the campaign is still raising.** Easy to add, and it
-   changes the game theory: pledges become reversible signals rather than commitments.
-   Argue for or against.
+This is a small rule with a large consequence: `raised` can never exceed `goal`, so
+`released` can never exceed what was pledged, so the pro-rata refund arithmetic cannot
+overflow its own pot. Overfunding is a genuine mess in practice — do you return the surplus,
+keep it, expand the project? — and the cleanest answer is to make it impossible.
+
+**Anyone may close a failed campaign.** Not the beneficiary:
+
+```solidity
+function closeFailed(uint256 id) external {
+    if (block.timestamp < c.deadline) revert TooEarly();
+    c.state = State.Failed;
+```
+
+A beneficiary whose campaign flopped has no incentive to announce it, and if closing were
+their decision the donors' money would sit there indefinitely. Any donor, or any passer-by,
+can do it for the cost of gas. **Never make an action that protects users depend on the
+party it protects them from.**
+
+**The pro-rata refund:**
+
+```solidity
+uint256 owed = c.state == State.Failed
+    ? pledged
+    : (pledged * (c.raised - c.released)) / c.raised;
+```
+
+Failed means nothing was released, so everyone is made whole. Cancelled means milestone one
+was paid and milestone two was rejected, so the remaining pot is shared in proportion to
+what each donor contributed. Integer division rounds down, leaving dust in the contract —
+tiny, deliberate, and worth understanding: rounding *against* the withdrawer is the only
+safe direction, because rounding the other way lets the last donor out with more than
+exists.
+
+**The arbiter is the oracle, and this is the honest limitation.** Someone must look at the
+evidence and decide whether the well was dug. The contract enforces the *process* — evidence
+before payment, one stage at a time, public rejection with a stated reason — and has no
+opinion on the *facts*. Module 14 attacks the same problem with a different tool, and does
+not solve it either.
+
+**Evidence is a hash.** The contract stores 32 bytes. A donor with the original report can
+prove it is the one submitted; a donor without it has 32 meaningless bytes. Anchoring proves
+integrity, never content.
+
+## Walk through it
+
+1. Create a campaign with a short window, a small goal, and three milestones summing to it.
+2. From two other accounts, pledge — remember `approve` on TVD first.
+3. Try to pledge more than remains. `Overfunded(remaining)` tells you the cap.
+4. Reach the goal exactly. State flips to `Funded` in the same transaction.
+5. **Beneficiary:** submit evidence for milestone 1.
+6. Try to submit for milestone 3. `WrongStep()` — stages are ordered.
+7. Instructor approves milestone 1. That amount, and only that, reaches the beneficiary.
+8. Submit milestone 2 and have it **rejected**. The campaign cancels.
+9. Each donor calls `refundable`, then `refund`. Notice the amounts are smaller than the
+   pledges, and work out why by hand before reading the code.
+
+Then the other path:
+
+10. A second campaign that never reaches its goal. After the deadline, **a donor** calls
+    `closeFailed`, then everyone refunds in full.
+
+## What actually happened on chain
+
+```
+CampaignCreated(id: 2, beneficiary: 0x…, goal: 300e18, deadline: 1790…, cause: "new well")
+Pledged(id: 2, donor: 0x…, amount: 200e18, raised: 200e18)
+Pledged(id: 2, donor: 0x…, amount: 100e18, raised: 300e18)
+GoalReached(id: 2, raised: 300e18)
+EvidenceSubmitted(id: 2, step: 0, evidence: 0x…)
+MilestoneApproved(id: 2, step: 0, amount: 100e18, arbiter: 0x…)
+MilestoneRejected(id: 2, step: 1, reason: "photographs show no work", arbiter: 0x…)
+Refund(id: 2, donor: 0x…, amount: 133333333333333333333)
+```
+
+Look at that last number: 133.333… TVD. Two hundred pledged, one third of the pot already
+released, two thirds of two hundred returned. The dust from the division stays in the
+contract for ever, and nothing in this design collects it — which is a reasonable choice and
+should be a conscious one.
+
+## When a plain database is better
+
+For a registered charity in a functioning jurisdiction: the existing machinery is better.
+Gift aid, regulated accounts, a complaints process, and the ability to reverse a fraudulent
+card payment are not small things.
+
+The milestone pattern earns its place when **donors and beneficiary share no institution** —
+cross-border giving, disaster response into somewhere with no functioning regulator, funding
+an anonymous developer — or when the point is that **the process itself is auditable by
+anyone**, not by an auditor everyone must trust.
+
+Be honest about what it costs: no tax relief, no chargebacks, no help if the beneficiary's
+key is stolen, and an arbiter who is still just a person.
+
+## What this does not fix
+
+- **Whether the work was done.** The arbiter decides; the contract enforces that they must
+  decide in public.
+- **A captured arbiter.** One role, one human. Collusion with the beneficiary defeats
+  everything here.
+- **A dishonest beneficiary with plausible evidence.** Photographs can be of someone else's
+  well.
+- **Donor identity.** Anyone can pledge, including the beneficiary, to fake momentum.
+- **The dust.** Small, permanent, unclaimable.
+
+## Common mistakes
+
+- **Releasing everything on funding.** That is Kickstarter, and it is the problem.
+- **Pushing refunds in a loop.** One reverting recipient freezes every donor's money.
+- **Letting the beneficiary declare failure.** They never will.
+- **Milestones that do not sum to the goal.** Either money is stranded or the last milestone
+  cannot be paid.
+- **Rounding refunds up.** The last donor out finds an empty pot.
+- **Forgetting `approve`.** Every ERC-20 flow in this repository starts with it.
+- **Allowing overfunding, then improvising.** Decide up front.
 
 ## Security checklist
 
-- [ ] Can the beneficiary reach any money without an approval?
-- [ ] Can the arbiter send a tranche anywhere other than the beneficiary, or change its size?
-- [ ] Can a donor be refunded twice, or refunded more than they pledged?
-- [ ] If one donor's address cannot receive tokens, does anybody else's refund break?
-- [ ] After a cancellation, does refunded + released equal raised, up to dust?
-- [ ] Can anyone but the beneficiary post evidence? Can evidence be replaced after approval?
-- [ ] What happens to a campaign whose arbiter loses their key?
+- [ ] Can `raised` ever exceed `goal`?
+- [ ] Can a donor refund twice? Refund from a `Funded` campaign?
+- [ ] Does the sum of all refunds ever exceed `raised - released`?
+- [ ] Can the beneficiary skip a milestone, or resubmit an approved one?
+- [ ] Can a campaign be closed as failed before its deadline?
+- [ ] Can the arbiter release money to anyone but the beneficiary?
+- [ ] What happens if the arbiter never rules — is the money stuck for ever?
+
+## Extend it
+
+1. Replace the single arbiter with the module 11 multisig, then with the module 12 DAO.
+   Time both, and decide what a donor would actually prefer.
+2. Add a donor veto: if holders of more than half the pledges object within a window, the
+   milestone is rejected without an arbiter. Then work out how a whale abuses that.
+3. Add a deadline per milestone, so a silent beneficiary cannot leave funds locked for ever.
+   Decide where the money goes when it expires.
+4. Let donors delegate their vote on milestones to someone who will actually read the
+   evidence. You have just rebuilt module 12 for a narrower purpose.
+
+## Further reading
+
+- [OpenZeppelin AccessControl](https://docs.openzeppelin.com/contracts/5.x/access-control)
+- [Pull over push payments](https://docs.soliditylang.org/en/latest/common-patterns.html#withdrawal-from-contracts)
+- Read about assurance contracts and dominant-assurance contracts — the economics behind
+  all-or-nothing funding, and older than any of this.
+
+**Next:** [Module 14 · Insurer and oracle →](14-insurer.md)

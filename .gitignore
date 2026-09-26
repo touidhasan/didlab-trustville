@@ -21,3 +21,7 @@ contracts/broadcast/**/dry-run/
 .vite/
 # NOTE: dist/ is committed on purpose — cPanel publishes it.
 services/rain-reporter/keys/
+
+# Foundry run artifacts and the local anvil deployment — regenerated, never shared
+contracts/broadcast/
+deployments/31337.json

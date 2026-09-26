@@ -1,0 +1,9 @@
+{
+  "name": "trustville-faucet",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A rate-limited TRUST faucet for the DIDLab chain.",
+  "scripts": { "start": "node faucet.mjs" },
+  "dependencies": { "viem": "^2.21.0" }
+}

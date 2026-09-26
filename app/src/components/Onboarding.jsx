@@ -130,12 +130,26 @@ export default function Onboarding({ wallet }) {
             <b>{balance === null ? '—' : `${Number(formatEther(balance)).toLocaleString()} TRUST`}</b>
             {!funded && ' · this updates automatically.'}
           </p>
-          {!funded && account && (
+          {!funded && account && FAUCET_URL && (
+            <p className="muted small">
+              The faucet asks for a course code — your instructor has it. One drip covers
+              hundreds of transactions, so you should only need it once. TRUST pays for gas only;
+              the town's own currency, TVD, comes from the Bank below.
+            </p>
+          )}
+          {!funded && account && FAUCET_URL && (
             <div className="row">
               <button className="btn btn-ghost" onClick={copy}>
                 {copied ? 'Copied' : 'Copy my address'}
               </button>
-              <a className="btn" href={FAUCET_URL} target="_blank" rel="noreferrer">
+              {/* Hand the faucet the address so nobody has to paste it twice — copying a
+                  hex string between two tabs is where people quietly give up. */}
+              <a
+                className="btn"
+                href={`${FAUCET_URL}?address=${account}`}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Open the faucet
               </a>
             </div>

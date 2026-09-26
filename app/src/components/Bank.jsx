@@ -4,6 +4,7 @@ import { townBankAbi, townTokenAbi } from '../abi/generated.js';
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const bank = contracts.TownBank;
@@ -90,6 +91,7 @@ export default function Bank({ wallet }) {
           TVD is the town currency, an ERC-20 anyone can audit. TRUST pays gas; TVD buys things. Only the Bank
           contract can mint, so no person — not even the town admin — can print money.
         </p>
+        <GuideLinks ids={[3]} />
       </div>
 
       <div className="board">

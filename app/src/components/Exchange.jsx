@@ -4,6 +4,7 @@ import { grainLoansAbi, grainTokenAbi, townSwapAbi, townTokenAbi } from '../abi/
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const grain = contracts.GrainToken;
@@ -236,6 +237,7 @@ export default function Exchange({ wallet }) {
           A second asset makes a price possible. Nobody sets it — the pool's two reserves are the
           price, and every trade moves them.
         </p>
+        <GuideLinks ids={[15]} />
       </div>
 
       <div className="board">

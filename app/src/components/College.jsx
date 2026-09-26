@@ -4,6 +4,7 @@ import { certificateRegistryAbi, eventTicketsAbi, townTokenAbi } from '../abi/ge
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const certs = contracts.CertificateRegistry;
@@ -163,6 +164,7 @@ export default function College({ wallet }) {
           A diploma anyone can check without phoning the registrar, and a ticket that cannot be forged or used
           twice. Both keep the document itself off chain.
         </p>
+        <GuideLinks ids={[7, 8]} />
       </div>
 
       <div className="board">

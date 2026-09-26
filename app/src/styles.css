@@ -74,6 +74,22 @@ p { margin: 0 0 0.8em; }
 .card-head { margin-bottom: 16px; }
 .section-head { margin: 8px 0 16px; }
 .honest { border-left: 4px solid var(--amber); }
+.learn { border-left: 4px solid var(--navy-2); }
+
+/* "Read first" links under each stop heading */
+.guide-links {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  margin: 12px 0 0; font-size: 0.88rem;
+}
+.guide-links-label {
+  text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.7rem; font-weight: 700;
+  color: var(--muted);
+}
+.guide-links a {
+  display: inline-block; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px;
+  text-decoration: none; color: var(--ink-2); background: var(--card);
+}
+.guide-links a:hover { border-color: var(--amber); color: var(--amber-ink); }
 
 /* onboarding steps */
 .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }

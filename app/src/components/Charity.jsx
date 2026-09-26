@@ -4,6 +4,7 @@ import { townCharityAbi, townTokenAbi } from '../abi/generated.js';
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const charity = contracts.TownCharity;
@@ -161,6 +162,7 @@ export default function Charity({ wallet }) {
           Give to a cause and keep the receipt. Pledges are refundable until the goal is met, and even
           then the money leaves one milestone at a time, against evidence.
         </p>
+        <GuideLinks ids={[13]} />
       </div>
 
       <div className="board">

@@ -2,178 +2,265 @@
 
 **Live:** https://dapp.didlab.org · **Chain:** DIDLab (ID 252501) · **Explorer:** https://explorer.didlab.org
 
-Trustville is a fictional small town where everyday trust problem is solved with a
-blockchain feature. It is the showcase dApp for the DIDLab Blockchain course: students walk
-through the town with their own MetaMask wallet, watch each transaction land on chain, and
-fork any module as the starting point for their group project.
+Trustville is a small town where every everyday trust problem is solved with a blockchain
+feature. It is the showcase dApp for the DIDLab blockchain course: you walk through the
+town with your own MetaMask wallet, watch each transaction land on chain, and fork any
+module as the starting point for your own project.
 
-## Objective
+Fifteen of sixteen modules are live. Every one of them states plainly what a blockchain
+buys you — and where a normal database would have done the job better.
 
-One story, many modules — so students see how the pieces fit together rather than meeting
-each standard in isolation. By the end of the walk-through a student should be able to:
+---
 
-1. Say when a blockchain is the right tool, and when a normal database is better. Every
-   module states both.
+## For students: just walk the town
+
+You do not need to clone anything.
+
+1. Install [MetaMask](https://metamask.io).
+2. Open **https://dapp.didlab.org** and press **Connect**. The site offers to add the
+   DIDLab network for you.
+3. You will have no TRUST, which is the chain's gas. Follow the link to the faucet — your
+   instructor has the code it asks for. One drip lasts the whole course.
+4. Work down the page. Each stop is a module; each module has a guide in
+   [`docs/modules/`](docs/modules/).
+
+Your **Passport** is a soulbound token that collects a stamp for each module you complete.
+It cannot be transferred, sold or given away — which is the point of module 2.
+
+---
+
+## What you should be able to do by the end
+
+1. Say when a blockchain is the right tool, and when it is not. Every module argues both
+   sides.
 2. Read what a transaction actually did: events, state changes, gas, and who signed it.
-3. Use the core standards — ERC-20, ERC-721, ERC-1155, soulbound tokens (ERC-5192),
-   role-based access control, commit–reveal, escrow, oracles.
-4. Separate on-chain from off-chain data, and explain what should never go on a public
-   ledger.
-5. Deploy their own version of a module and host it on their group subdomain.
+3. Use the standards — ERC-20, ERC-721, ERC-1155, soulbound tokens (ERC-5192), role-based
+   access control, commit–reveal, escrow, oracles, governance, AMMs.
+4. Separate on-chain from off-chain data, and explain what must never go on a public ledger.
+5. Deploy your own version of a module and host it on your group's subdomain.
 
 Two design rules run through everything: **personal data never goes on chain** (only
 hashes), and **privileges belong to contracts, not people** (no human can mint the town
 currency).
+
+---
+
+## Run the whole town on your own machine
+
+One command gives you a private Trustville: your own chain, all 22 contracts, the site
+pointed at it. No faucet, no permissions, nothing you do touches the public chain.
+
+### Prerequisites
+
+| | |
+| --- | --- |
+| [Node.js](https://nodejs.org) 20+ | `node --version` |
+| [Foundry](https://book.getfoundry.sh/getting-started/installation) | `forge --version` — provides `forge`, `cast` and `anvil` |
+| git | |
+
+On Windows, use WSL2 — Foundry targets Linux and macOS.
+
+### Go
+
+```bash
+git clone https://github.com/touidhasan/didlab-trustville
+cd didlab-trustville
+
+cd contracts
+forge install foundry-rs/forge-std --no-git
+forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git
+cd ..
+
+npm run local
+```
+
+That starts a local chain, deploys the town, wires the frontend and serves it at
+http://localhost:5173. The script prints the network settings for MetaMask and the test
+account that owns everything. Ctrl-C stops the chain and takes the town with it.
+
+Because the deployer is also the admin on a local chain, everything is granted in one
+script. That is *not* how the public deployment works — see **Keys** below.
+
+### Running the site against the live DIDLab chain instead
+
+```bash
+npm run setup
+npm run dev
+```
+
+With no `app/.env` the site talks to DIDLab and the real contracts, which is what
+dapp.didlab.org serves. Copy `app/.env.example` to `app/.env` to point it anywhere else;
+addresses are read from `deployments/<chainId>.json`, chosen by chain id, so switching
+chains is configuration rather than a code edit.
+
+---
+
+## The stops
+
+| Stop | Modules | Guides |
+| --- | --- | --- |
+| Town Hall | 1 Resident record · 2 Soulbound Passport · 3 Town token | [1](docs/modules/01-resident-record.md) · [2](docs/modules/02-soulbound-passport.md) · [3](docs/modules/03-town-token.md) |
+| Market | 4 Provenance · 5 Escrow · 6 Sealed-bid auction | [4](docs/modules/04-product-provenance.md) · [5](docs/modules/05-escrow.md) · [6](docs/modules/06-sealed-bid-auction.md) |
+| College | 7 Verifiable certificates · 8 Event tickets (ERC-1155) | [7](docs/modules/07-verifiable-certificates.md) · [8](docs/modules/08-event-tickets.md) |
+| Housing | 9 Property deeds (ERC-721) · 10 Rent escrow | [9](docs/modules/09-property-deeds.md) · [10](docs/modules/10-rent-escrow.md) |
+| Council | 11 Multisig treasury · 12 DAO governance | [11](docs/modules/11-multisig-treasury.md) · [12](docs/modules/12-dao-governance.md) |
+| Charity | 13 Milestone crowdfunding | [13](docs/modules/13-charity.md) |
+| Insurer | 14 Parametric insurance and the oracle problem | [14](docs/modules/14-insurer.md) |
+| Exchange | 15 Swap, liquidity and lending ⚠ | [15](docs/modules/15-defi.md) |
+| Privacy Lab | 16 Zero-knowledge proofs | planned |
+
+**[Every module has its own guide →](docs/modules/)** Each one follows the same shape: the
+problem, the idea, the vocabulary, how it works, the two or three lines that carry the
+design, a walkthrough on the live site, the events it emits, when a plain database would
+have been better, what it does **not** fix, common mistakes, a security checklist, and
+exercises with traps in them.
+
+Two of them are worth reading even if you never run the code. [Module 14](docs/modules/14-insurer.md)
+is where the chain stops being self-contained and has to trust somebody about the weather.
+[Module 15](docs/modules/15-defi.md) ships a **deliberately vulnerable** lending contract
+and a test that exploits it successfully — the bug is the lesson.
+
+---
 
 ## Status
 
 | Phase | Modules | State |
 | --- | --- | --- |
 | D0 | Site, wallet onboarding, notice board | Live |
-| D1 | 1–3 Resident identity, Passport, Town token | Live · tag `d1` |
-| D2a | 4–6 Provenance, Escrow, Sealed-bid auction | Live · tag `d2a` |
-| D2b | 7–8 Certificates, ERC-1155 tickets | Live · tag `d2b` |
-| D3a | 9–10 Property deeds, Rent escrow (+ voting wrapper) | Live · tag `d3a` |
-| D3b | 11–12 Multisig treasury, DAO governance | Live · tag `d3b` |
-| D4 | 13–15 Charity, Insurer, DeFi | Planned |
-| D5 | Instructor progress view, lab handouts | Planned |
+| D1 | 1–3 Resident identity, Passport, Town token | Live · `d1` |
+| D2a | 4–6 Provenance, Escrow, Sealed-bid auction | Live · `d2a` |
+| D2b | 7–8 Certificates, ERC-1155 tickets | Live · `d2b` |
+| D3a | 9–10 Property deeds, Rent escrow | Live · `d3a` |
+| D3b | 11–12 Multisig treasury, DAO governance | Live · `d3b` |
+| D4a | 13 Milestone crowdfunding | Live · `d4a` |
+| D4b | 14 Oracle and parametric insurance | Live |
+| D4c | 15 Swap and lending | Live |
+| D5 | Lab handouts, instructor progress view | Planned |
 | D6 | 16 Zero-knowledge proofs | Stretch |
 
-### Deployed on chain 252501
+Deployed addresses live in [`deployments/252501.json`](deployments/252501.json), which the
+app reads at build time. **Redeploying a contract needs no code change — but it does need
+two follow-ups that fail silently if you forget:** grant the new address `STAMPER_ROLE` on
+the Passport, and rebuild `dist/`, because addresses are baked in at build time.
 
-| Contract | Address | Phase |
-| --- | --- | --- |
-| ResidentRegistry | `0x30209DE180f649ea47C959dD611404ca87fdbF5e` | D1 |
-| TrustvillePassport | `0xA046E4D575cE37D5024893f590D3FF74690e8211` | D1 |
-| TownToken (TVD) | `0x9a17Fa48aa787De5CB470214D28af89CaFf7762c` | D1 |
-| TownBank | `0x01A0bfEe1875c78Adf1179797e5f06212Bf6d8A4` | D1 |
-| ProductRegistry | `0x242A011d333c2FEfb3cF82ab8104916282CaD8Ce` | D2a |
-| TownEscrow | `0x397B5783AD4De4004274be14544cd186eABa57D5` | D2a |
-| SealedAuction | `0x029Ad3CD878071c6389bA891EfFB42C88c14b04a` | D2a |
-| CertificateRegistry | `0x42F5198AfAa5F639D3F20eB02ff89311FC51F7a4` | D2b |
-| EventTickets | `0x2Ed7004e740bC7a415B8A030723224ca5419cd94` | D2b |
-| PropertyDeeds | `0x939FF9B685D1A9b65E55754E8dAD3f766377A436` | D3a |
-| RentEscrow | `0x8A1632baA01D304912369234CCc952BaC94db263` | D3a |
-| VoteToken (vTVD) | `0xb72174064b61Dd3Fa0c178E3E03fEF27c70DE3C6` | D3a |
-| TownTimelock | `0x60a03DfE71bf0e14B9128953E285B38b104eBbDA` | D3b |
-| TownGovernor | `0x8305D7D3aEBD53D3e09e01A82AF3162A3bf62b2f` | D3b |
-| TownTreasury | `0x5FDABa82F5E632B7E78EBa066De8F3655cB1D7F3` | D3b |
-
-The app reads these from `deployments/252501.json`; redeploying a contract never needs a
-code change. It does need two follow-ups, and both are easy to forget: the new address
-must be granted `STAMPER_ROLE` on the Passport, or its module silently stops awarding
-stamps, and `dist/` must be rebuilt, because the addresses are baked in at build time.
-
-```bash
-# after any redeploy — every module contract must answer true
-cast call $PASSPORT "hasRole(bytes32,address)(bool)" $STAMPER <new address> --rpc-url $RPC
-```
-
-The Council holds its money in the **Timelock**, not the Governor and not the Treasury.
-`admin can schedule` must be `false`: if any key can schedule a transfer, the vote is
-decoration.
-
-## Stops and modules
-
-| Stop | Modules | Phase |
-| --- | --- | --- |
-| Town Hall | 1 Resident record · 2 Soulbound Passport | D1 |
-| Bank | 3 Town token (ERC-20) · 15 Swap and lending | D1 / D4 |
-| Market | 4 Product provenance · 5 Escrow · 6 Sealed-bid auction | D2a |
-| College | 7 Verifiable certificates · 8 Event tickets (ERC-1155) | D2b |
-| Housing | 9 Property deeds (ERC-721) · 10 Rent escrow | D3a |
-| Council | 11 Multisig treasury · 12 DAO governance | D3b |
-| Charity | 13 Milestone crowdfunding | D4 |
-| Insurer | 14 Parametric insurance (oracle) | D4 |
-| Privacy Lab | 16 Zero-knowledge proofs | D6 (stretch) |
-
-Each module ships with a guide in [`docs/modules/`](docs/modules/): the problem, why a
-blockchain (and when not), the design, steps to try it, three suggested extensions, and a
-security checklist.
+---
 
 ## Repository layout
 
 ```
 app/                    Vite + React frontend (source)
-contracts/              Foundry project: src/ contracts, test/ tests, script/ deployments
-deployments/252501.json Contract addresses on the DIDLab chain (read by the app)
-services/               API, indexer, oracle (added in D4)
-proxmox/                scripts that create the VM hosting dapp.didlab.org
+contracts/src/          The contracts
+contracts/test/         Foundry tests, ~139 of them
+contracts/script/       Deployment scripts, one per phase, plus DeployAll
+deployments/<id>.json   Contract addresses per chain — read by the app
+services/rain-reporter/ The oracle nodes for module 14
 docs/modules/           One guide per module
+scripts/local-town.sh   Local chain + full deployment + dev server
 scripts/sync-abi.mjs    Copies compiled ABIs into the frontend
 dist/                   Built site — this is what the web host publishes
 ```
 
-## Develop
+---
+
+## Tests
 
 ```bash
-npm run setup        # install app dependencies
-npm run dev          # local dev server at http://localhost:5173
-npm run build        # build into dist/  (commit dist/ before pushing)
+npm test                                   # all of them
+cd contracts && FOUNDRY_PROFILE=test forge test --match-contract CouncilTest -vv
 ```
 
-Contracts (requires [Foundry](https://book.getfoundry.sh)):
+Tests run without the optimizer (see the comment in `foundry.toml`); deployments use the
+optimized build. A few are worth reading as documentation:
+
+- `test_ATTACK_InflateTheCollateralPriceAndWalkAway` — the module 15 exploit, working.
+- `test_ImpermanentLossIsRealAndMeasurable` — puts a number on what liquidity provision costs.
+- `test_OneLiarCannotMoveTheAnswer` / `test_AMajorityOfReportersControlsTheAnswer` — what
+  M-of-N buys, and what it does not.
+- `test_TimelockIsOwnedByNobody` — the property that makes the DAO's vote mean something.
+
+---
+
+## Deploying your own town
+
+On a fresh chain, one script does everything:
 
 ```bash
 cd contracts
-forge install foundry-rs/forge-std --no-git                          # first time only
-forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git    # first time only
-forge build && forge test                                            # 93 tests
-cd .. && npm run sync-abi        # refresh app/src/abi/generated.js after changing a contract
+forge script script/DeployAll.s.sol --rpc-url <rpc> --broadcast --slow --private-key <key>
 ```
+
+`--slow` matters: it sends one transaction at a time. Without it, forge fires all forty
+at once and a local node will quietly drop some.
+
+On DIDLab, deploy phase by phase instead, because the public deployment deliberately splits
+deploying from granting:
+
+```bash
+export TOWN_ADMIN=0xYourAdminAddress
+forge script script/DeployTown.s.sol     --rpc-url didlab --account didlab-deployer \
+  --sender <deployer> --legacy --slow --gas-estimate-multiplier 105 --broadcast
+# then DeployMarket, DeployCollege, DeployHousing, DeployCouncil,
+#      DeployCharity, DeployInsurer, DeployDefi
+```
+
+Each script ends by printing the admin-signed `grantRole` commands it could not run itself.
+
+Two things this chain will teach you the hard way:
+
+- `--legacy` is required — DIDLab has no EIP-1559 fee market.
+- Gas estimates are squeezed from both sides. `TownGovernor` costs 4,039,001 gas against a
+  4,700,000 block limit, so Foundry's default 130% padding is rejected outright; but 105%
+  is too tight for `renounceRole`, which earns a storage refund the estimator nets out.
+  Deploys need a low multiplier, state-clearing calls need a high one or an explicit
+  `--gas-limit`. `FinishCouncil.s.sol` exists because a script once ran out of gas on its
+  last step and left a Timelock half-wired.
+
+---
 
 ## Keys
 
-Two keys, never one. Gas is free on this chain, but ownership is not: a leaked key that can
-mint the town currency or issue certificates hands over the whole town.
+Three keys, each able to do one thing. That separation is the whole security model, and it
+was learned the hard way: the town admin key spent months doubling as the faucet's signing
+key, which meant an unattended server process could have minted the currency.
+`RotateAdmin.s.sol` is what fixed it, and it is worth reading before you design your own.
 
-| Key | Holds | Lives in |
+| Key | Can do | Lives in |
 | --- | --- | --- |
-| Deployer | Nothing once a deployment finishes | Encrypted Foundry keystore on the build machine |
-| Town admin (`TOWN_ADMIN`) | `DEFAULT_ADMIN_ROLE` on every contract, escrow arbiter | MetaMask, or a keystore you unlock deliberately |
+| Deployer | Nothing, once a deployment finishes | Encrypted Foundry keystore on the build machine |
+| Town admin | `DEFAULT_ADMIN_ROLE` everywhere; arbiter, registrar, certifier | MetaMask. Admin actions only — never a demo account, never on a server |
+| Service keys | Report the weather. Send gas. Nothing else | Root-owned env files on the machine that runs them |
 
-`DeployTown.s.sol` deploys with the deployer as temporary admin, wires the contracts to
-each other, grants everything to `TOWN_ADMIN`, renounces its own roles, and then asserts
-all of that — a broken handover fails the deployment instead of shipping quietly.
+`DeployTown.s.sol` deploys with the deployer as temporary admin, wires the contracts, grants
+everything to `TOWN_ADMIN`, renounces its own roles, and then **asserts** all of that — a
+broken handover fails the deployment instead of shipping quietly.
 
-```bash
-cast wallet import didlab-deployer --interactive     # once
-cd contracts
-export TOWN_ADMIN=0xYourAdminAddress
-forge script script/DeployTown.s.sol --rpc-url didlab --account didlab-deployer --legacy --broadcast
-```
+Because the deployer ends up with nothing, wiring a new module into the Passport is
+necessarily a second, admin-signed step. That is friction on purpose.
 
-`--legacy` is required: the DIDLab chain does not support EIP-1559.
+**Never commit a private key, a mnemonic or an `.env` file.** This repository is public.
 
-Because the deployer ends up with no roles, wiring a **new** module contract into the
-Passport is necessarily a second, admin-signed step:
+---
 
-```bash
-forge script script/DeployMarket.s.sol     --rpc-url didlab --account didlab-deployer --legacy --broadcast
-forge script script/GrantMarketRoles.s.sol --rpc-url didlab --legacy                  # prints the calls
-forge script script/GrantMarketRoles.s.sol --rpc-url didlab --legacy --broadcast --account <admin>
-```
+## Services
 
-Never commit a private key, and never put one in a tenant's Env tab.
+Module 14 needs oracle nodes: three processes, three keys, each reading its own simulated
+rain gauge. See [`services/rain-reporter/`](services/rain-reporter/README.md) — including
+how to stage a lying reporter in class and watch the median absorb it.
 
-## Hosting
+Gas comes from the DIDLab faucet, which is shared with the rest of the platform.
 
-The site is static: the frontend talks to the chain from the student's browser, so no server
-holds a key or signs anything.
-
-- **Dedicated VM (current)** — `proxmox/create-dapp-vm.sh` builds a Debian VM with nginx,
-  atomic releases, `dapp-deploy` / `dapp-rollback`, and a Cloudflare tunnel. See
-  [`proxmox/README.md`](proxmox/README.md).
-- **cPanel tenant** — Tenants → **dapp** → Deploy from Git, which publishes `dist/` with no
-  build step on the server.
+---
 
 ## Release
 
 1. Deploy or update contracts; the scripts write addresses into `deployments/252501.json`.
-2. `npm run build` and commit `dist/` — the host publishes files and does not build.
-3. `git push`, then `git tag <phase> && git push --tags`.
-4. On the web host: `sudo dapp-deploy` (or redeploy from Git in cPanel).
-5. `sudo dapp-rollback` returns to the previous release if something is wrong.
+2. `npm run sync-abi && npm run build`, and commit `dist/` — the host publishes files and
+   does not build.
+3. `git push`, then tag **after** confirming the site is up. Never move a published tag:
+   every clone that already has it will refuse to fetch.
+4. On the web host: `sudo dapp-deploy`. `sudo dapp-rollback` returns to the previous release.
+
+---
 
 ## Timings
 
@@ -185,9 +272,10 @@ Durations are bounded, not fixed, so the same contracts suit a lab and a homewor
 | Deposit claim window | 2 min – 30 days | 5 min |
 | Auction commit / reveal | 30 s – 7 days each | 5 min |
 | Governance delay / voting / timelock | set at deployment | 1 min / 10 min / 2 min |
+| Oracle period | ≥ 60 s | 10 min |
+| Grain harvest cooldown | 1 min – 7 days | 10 min |
 
-Governance timings are deployment-time settings: `VOTING_DELAY`, `VOTING_PERIOD` and
-`TIMELOCK_DELAY` (seconds) on `DeployCouncil.s.sol`.
+---
 
 ## Rules
 
@@ -196,6 +284,8 @@ Governance timings are deployment-time settings: `VOTING_DELAY`, `VOTING_PERIOD`
 - No student names or grades on chain; wallet addresses stay pseudonymous.
 - Anything students can call is open by design and rate-limited by the contract, so a
   griefer costs the class nothing.
+
+---
 
 ## License
 

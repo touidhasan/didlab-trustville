@@ -4,6 +4,7 @@ import { propertyDeedsAbi, rentEscrowAbi, townTokenAbi } from '../abi/generated.
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const deeds = contracts.PropertyDeeds;
@@ -180,6 +181,7 @@ export default function Housing({ wallet }) {
           A deed that genuinely changes hands, and a deposit that sits where neither the landlord nor the tenant
           can touch it alone.
         </p>
+        <GuideLinks ids={[9, 10]} />
       </div>
 
       <div className="board">

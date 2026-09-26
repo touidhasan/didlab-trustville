@@ -4,6 +4,7 @@ import { cropInsuranceAbi, rainOracleAbi, townTokenAbi } from '../abi/generated.
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const oracle = contracts.RainOracle;
@@ -160,6 +161,7 @@ export default function Insurer({ wallet }) {
           the rainfall was, the contract takes the middle answer, and a policy pays on that number —
           with no assessor, no claim form and no argument.
         </p>
+        <GuideLinks ids={[14]} />
       </div>
 
       <div className="board">

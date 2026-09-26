@@ -18,6 +18,7 @@ import {
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
+import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
 
 const treasury = contracts.TownTreasury;
@@ -287,6 +288,7 @@ export default function Council({ wallet }) {
           Two ways to spend public money. The treasury trusts a few named signers and moves fast; the Council
           trusts token holders and moves slowly, in public. Neither is simply better.
         </p>
+        <GuideLinks ids={[11, 12]} />
       </div>
 
       <div className="board">
