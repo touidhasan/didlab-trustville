@@ -20,7 +20,25 @@ KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 need() { command -v "$1" >/dev/null || { echo "missing: $1 — see the README's Prerequisites"; exit 1; }; }
 need anvil; need forge; need node; need npm
 
-cleanup() { [ -n "${ANVIL_PID:-}" ] && kill "$ANVIL_PID" 2>/dev/null || true; }
+ENVFILE="$ROOT/app/.env"
+BACKUP="$ROOT/app/.env.before-local-town"
+
+# Take the chain down AND take the .env with it.
+#
+# This script writes app/.env so the site talks to the throwaway chain. Leaving that file
+# behind is how a production build silently ships pointing at 127.0.0.1:8545 -- which is
+# exactly what happened on 2026-09-26: dapp.didlab.org went out built for a local anvil
+# chain that had been dead for days, and the site correctly reported the chain as
+# unreachable while everyone looked at the wrong end of the wire.
+cleanup() {
+  [ -n "${ANVIL_PID:-}" ] && kill "$ANVIL_PID" 2>/dev/null || true
+  if [ -f "$ENVFILE" ] && grep -q 'written by scripts/local-town.sh' "$ENVFILE" 2>/dev/null; then
+    rm -f "$ENVFILE"
+    if [ -f "$BACKUP" ]; then mv "$BACKUP" "$ENVFILE"; fi
+    echo "==> app/.env removed — the next build targets DIDLab again"
+  fi
+  return 0 # this runs on EXIT; a stray non-zero here would fake a failed run
+}
 trap cleanup EXIT
 
 echo "==> starting a local chain"
@@ -53,7 +71,9 @@ cd "$ROOT"
 [ -d app/node_modules ] || npm run setup
 npm run sync-abi
 
-cat > app/.env <<EOF
+[ -f "$ENVFILE" ] && ! grep -q 'written by scripts/local-town.sh' "$ENVFILE" && mv "$ENVFILE" "$BACKUP"
+
+cat > "$ENVFILE" <<EOF
 # written by scripts/local-town.sh — delete this file to go back to DIDLab
 VITE_CHAIN_ID=$CHAIN_ID
 VITE_RPC_URL=$RPC
