@@ -1,38 +1,90 @@
 name: CI
 
+# Every pull request runs this. A red check is not a formality to argue with -- it is the
+# same gate that stands between you and a deploy in a real team, and it is the reason
+# "works on my machine" stopped being an acceptable sentence some time in the 2000s.
+
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
   contracts:
+    name: Contracts — build and test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: contracts
     steps:
       - uses: actions/checkout@v4
+        with: { submodules: recursive }
+
       - uses: foundry-rs/foundry-toolchain@v1
-      - name: Install libraries
+        with: { version: stable }
+
+      - name: Install libraries if they are not vendored
+        working-directory: contracts
         run: |
-          forge install foundry-rs/forge-std --no-git
-          forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git
-      - run: forge build --sizes
-      - run: forge test -vv
+          [ -d lib/forge-std ] || forge install foundry-rs/forge-std --no-git
+          [ -d lib/openzeppelin-contracts ] || forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git
+
+      - name: Build (optimized — this is what would be deployed)
+        working-directory: contracts
+        run: forge build --skip test --sizes
+
+      - name: Test
+        working-directory: contracts
+        run: FOUNDRY_PROFILE=test forge test -vv
+
+      - name: Formatting
+        working-directory: contracts
+        run: forge fmt --check
 
   app:
+    name: Frontend — build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Install
+        run: npm run setup
+
+      # A build failure here usually means the ABI file is out of step with the contracts.
+      # Run `npm run sync-abi` after changing a contract, and commit the result.
+      - name: Build
+        run: npm run build
+
+  docs:
+    name: Course site — build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: app/package-lock.json
-      - run: npm ci
-        working-directory: app
-      - run: npm run build
-        working-directory: app
-      - name: dist/ must be committed and up to date
-        run: git diff --exit-code -- dist || (echo "::error::Run 'npm run build' and commit dist/" && exit 1)
+        with: { node-version: 20 }
+      - run: npm install
+      # Dead-link checking is on, so a lab pointing at a renamed file fails here rather
+      # than sending a student to a 404 in the middle of an assessment.
+      - run: npm run docs:build
+
+  secrets:
+    name: No secrets committed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Look for keys and env files
+        run: |
+          set -e
+          # A 64-hex-character string is what a private key looks like. There is no good
+          # reason for one to be in a diff, and every reason to catch it before it is
+          # public and permanent.
+          if git grep -nIE '\b(0x)?[0-9a-fA-F]{64}\b' -- \
+               ':!contracts/test' ':!contracts/broadcast' ':!dist' ':!*.lock' \
+               ':!app/src/abi/generated.js' ':!deployments' ':!docs'; then
+            echo "::error::Something that looks like a private key is in the diff."
+            exit 1
+          fi
+          if git ls-files | grep -E '(^|/)\.env$'; then
+            echo "::error::A .env file is committed."
+            exit 1
+          fi

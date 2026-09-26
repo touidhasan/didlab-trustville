@@ -1,7 +1,7 @@
 {
   "name": "didlab-trustville",
   "private": true,
-  "description": "Trustville \u2014 DIDLab blockchain showcase dApp (dapp.didlab.org)",
+  "description": "Trustville — DIDLab blockchain showcase dApp (dapp.didlab.org)",
   "license": "MIT",
   "scripts": {
     "setup": "npm --prefix app install",
@@ -10,6 +10,12 @@
     "preview": "npm --prefix app run preview",
     "sync-abi": "node scripts/sync-abi.mjs",
     "local": "./scripts/local-town.sh",
-    "test": "cd contracts && FOUNDRY_PROFILE=test forge test"
+    "test": "cd contracts && FOUNDRY_PROFILE=test forge test",
+    "docs:dev": "vitepress dev docs --host 127.0.0.1",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3"
   }
 }
