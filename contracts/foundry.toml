@@ -15,6 +15,18 @@ remappings = [
   "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
 ]
 
+# Tests run without the optimizer. Compiling the whole project WITH it has crashed solc on
+# the build box (std::bad_alloc, SIGSEGV, "stack smashing detected") as the project grew
+# past ~100 files, and tests do not need optimized bytecode -- they need to run.
+#
+#   FOUNDRY_PROFILE=test forge test        # unoptimized, fast, safe here
+#   forge build --skip test                # optimized, what actually gets deployed
+#
+# Profiles inherit from [profile.default], so everything else stays the same. Deployments
+# still use the default profile, so the bytecode on chain is optimized as before.
+[profile.test]
+optimizer = false
+
 [rpc_endpoints]
 didlab = "https://eth.didlab.org"
 
