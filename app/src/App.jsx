@@ -1,3 +1,4 @@
+import Admin from './components/Admin.jsx';
 import Bank from './components/Bank.jsx';
 import ChainStatus from './components/ChainStatus.jsx';
 import Charity from './components/Charity.jsx';
@@ -120,6 +121,7 @@ export default function App() {
           <Charity wallet={wallet} />
           <Insurer wallet={wallet} />
           <NoticeBoard wallet={wallet} />
+          <Admin wallet={wallet} />
           <TownMap />
 
           <section className="card honest">

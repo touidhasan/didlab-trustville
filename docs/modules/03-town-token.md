@@ -23,9 +23,12 @@ An ordinary ERC-20 with a hard supply cap, where the right to mint is held by a 
 rather than a person.
 
 `TownBank` holds `MINTER_ROLE`. It mints in exactly one circumstance: a registered resident
-claims their welcome grant, once. No human address can mint, including the town admin,
-including the deployer. The rule is in the code, and anyone can check it in thirty seconds
-on the explorer.
+claims their welcome grant, once. No human address holds `MINTER_ROLE` — not the town
+admin, not the deployer — and anyone can check that on the explorer in thirty seconds.
+
+Read that sentence carefully, because it is narrower than it first appears. *Holding* the
+role and *being able to obtain* it are different things, and the section below is about the
+gap between them.
 
 ## Key terms
 
@@ -95,12 +98,50 @@ cast call $TOKEN "hasRole(bytes32,address)(bool)" \
   $(cast keccak "MINTER_ROLE") $TOWN_ADMIN --rpc-url https://eth.didlab.org
 ```
 
-`false`. The town admin — who deployed everything, who arbitrates disputes, who issues
-certificates — cannot create a single TVD.
+`false`. The town admin — who arbitrates disputes, who issues certificates — cannot call
+`mint`. That is not politeness: `DeployTown.s.sol` grants `MINTER_ROLE` to the Bank contract
+and nothing else, then hands `DEFAULT_ADMIN_ROLE` to the town admin, renounces what the
+deployer holds, and **asserts** the result — so a botched handover fails the deployment
+rather than shipping quietly.
 
-That is not politeness. `DeployTown.s.sol` grants `MINTER_ROLE` to the Bank contract and
-nothing else, then renounces its own admin rights and **asserts** the result, so a botched
-handover fails the deployment rather than shipping quietly.
+Now ask the harder question:
+
+```bash
+cast call $TOKEN "hasRole(bytes32,address)(bool)" \
+  0x0000000000000000000000000000000000000000000000000000000000000000 \
+  $TOWN_ADMIN --rpc-url https://eth.didlab.org
+```
+
+`true`. The town admin holds `DEFAULT_ADMIN_ROLE` on the token, and in OpenZeppelin's
+`AccessControl` the default admin is the role that **grants every other role**. So the admin
+cannot mint — and is one transaction away from being able to:
+
+```
+grantRole(MINTER_ROLE, adminAddress)   // one transaction
+mint(adminAddress, 1_000_000e18)       // now permitted
+```
+
+This is the module's real lesson, and it is more useful than the comfortable version. **A
+role held by a contract is not the same as a power nobody has.** What the design actually
+buys you is not impossibility but *visibility*: the grant is a public transaction, signed by
+a known address, permanent, and announced by a `RoleGranted` event that anyone watching the
+token will see. Mint quietly and you cannot. Mint at all and everyone can prove who did.
+
+That is a real security property and it is worth having. It is just not the one a casual
+reading claims.
+
+If you want the stronger guarantee, it exists — renounce `DEFAULT_ADMIN_ROLE` on the token
+after deployment, so no address can ever grant `MINTER_ROLE` again. Trustville does not,
+deliberately: it is a teaching chain that occasionally needs TVD it cannot earn, and
+pretending otherwise would be the dishonest choice. Before you copy this pattern, decide
+which of the two you are actually building, and say so in your documentation.
+
+> **This happened here.** An earlier version of this guide said the admin "cannot create a
+> single TVD", and the Bank stop in the dApp said no person "can print money". Both were
+> wrong in exactly the way described above, and neither was caught until someone needed
+> 1,000 TVD to seed the module 15 liquidity pool and went looking for where it could come
+> from. Overclaiming a guarantee is the most common documentation bug in this field, and the
+> authors of this repository are not immune to it.
 
 ## Walk through it
 
@@ -143,6 +184,9 @@ permanent in a way a database migration is not.
 - **The cap does not stop concentration.** One address could hold everything.
 - **Code does not stop policy.** The admin can set the grant to a billion for future
   claimants. The cap binds; the rate does not.
+- **The admin can still reach the mint.** Holding `DEFAULT_ADMIN_ROLE` means holding the
+  power to grant `MINTER_ROLE`, to itself or anyone. The protection is that doing so is
+  public and permanent, not that it is impossible.
 
 ## Common mistakes
 

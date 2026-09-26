@@ -88,8 +88,9 @@ export default function Bank({ wallet }) {
       <div className="card-head">
         <h2>Bank · module 3</h2>
         <p className="muted">
-          TVD is the town currency, an ERC-20 anyone can audit. TRUST pays gas; TVD buys things. Only the Bank
-          contract can mint, so no person — not even the town admin — can print money.
+          TVD is the town currency, an ERC-20 anyone can audit. TRUST pays gas; TVD buys things. Minting
+          belongs to the Bank contract, not to any person — though the admin could grant it to themselves,
+          in public, in one transaction anyone can see. Module 3 is about that difference.
         </p>
         <GuideLinks ids={[3]} />
       </div>
