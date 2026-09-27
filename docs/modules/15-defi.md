@@ -176,8 +176,15 @@ deadline.
 
 ## Walk through it
 
+On Trustville the pool already exists — 1,000 TVD against 1,000 GRAIN, so the headline price
+is 1.00 and `quote(100 TVD)` returns **90.661089388 GRAIN**. Work that number out by hand
+from the formula above before you call it; agreeing with the contract to the wei is a better
+check on your understanding than any test.
+
+Step 2 is for a local town, where you are the first liquidity provider.
+
 1. `harvest()` some GRAIN.
-2. Seed the pool with `addLiquidity`. Note `k`.
+2. Seed the pool with `addLiquidity`, if it is empty. Note `k`.
 3. Swap a small amount. Check `quote` first, then compare with what you received.
 4. Now swap something large — a tenth of the pool. Look at the price you got versus the
    headline rate. That is slippage, and it is why `quote` exists.

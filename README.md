@@ -134,9 +134,20 @@ and a test that exploits it successfully — the bug is the lesson.
 | D3b | 11–12 Multisig treasury, DAO governance | Live · `d3b` |
 | D4a | 13 Milestone crowdfunding | Live · `d4a` |
 | D4b | 14 Oracle and parametric insurance | Live |
-| D4c | 15 Swap and lending | Live |
-| D5 | Lab handouts, instructor progress view | Planned |
-| D6 | 16 Zero-knowledge proofs | Stretch |
+| D4c | 15 Swap and lending | Live · pool seeded 1,000 TVD / 1,000 GRAIN |
+| D5 | Six lab specs, module guides, CI, admin panel | Live |
+| D6 | 16 Zero-knowledge proofs | Next |
+
+Beyond the modules themselves, the town carries:
+
+- **[A guide per module](docs/modules/)** — the problem, the design, what to do on the live
+  site, and an explicit account of what each contract does *not* fix.
+- **[Six lab specs](docs/labs/)** — a requirement and acceptance criteria each, delivered as
+  a pull request that has to survive peer review.
+- **An admin panel** in the site itself, visible only to the holder of `DEFAULT_ADMIN_ROLE`.
+  It exists because the admin key lives in MetaMask and nothing else could sign an admin
+  call without exporting it. Every function it exposes is role-guarded in the contract —
+  connect a different account and watch it refuse.
 
 Deployed addresses live in [`deployments/252501.json`](deployments/252501.json), which the
 app reads at build time. **Redeploying a contract needs no code change — but it does need
