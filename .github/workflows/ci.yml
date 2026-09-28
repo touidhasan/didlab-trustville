@@ -78,9 +78,16 @@ jobs:
           # A 64-hex-character string is what a private key looks like. There is no good
           # reason for one to be in a diff, and every reason to catch it before it is
           # public and permanent.
+          # Two generated files legitimately contain long runs of hex and no secret:
+          # PoseidonT3.sol embeds circomlib's compiled hasher as creation bytecode, and
+          # Groth16Verifier.sol is snarkjs's output. Both are exempted BY NAME rather than
+          # by excluding contracts/src, because a blanket exemption on the source tree would
+          # quietly turn this check off for the code it exists to protect.
           if git grep -nIE '\b(0x)?[0-9a-fA-F]{64}\b' -- \
                ':!contracts/test' ':!contracts/broadcast' ':!dist' ':!*.lock' \
-               ':!app/src/abi/generated.js' ':!deployments' ':!docs'; then
+               ':!app/src/abi/generated.js' ':!deployments' ':!docs' \
+               ':!contracts/src/PoseidonT3.sol' ':!contracts/src/Groth16Verifier.sol' \
+               ':!app/public/zk'; then
             echo "::error::Something that looks like a private key is in the diff."
             exit 1
           fi

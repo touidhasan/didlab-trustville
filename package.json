@@ -13,9 +13,17 @@
     "test": "cd contracts && FOUNDRY_PROFILE=test forge test",
     "docs:dev": "vitepress dev docs --host 127.0.0.1",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs --host 127.0.0.1"
+    "docs:preview": "vitepress preview docs --host 127.0.0.1",
+    "circuit": "./scripts/build-circuit.sh",
+    "poseidon": "node scripts/gen-poseidon.mjs",
+    "zk:fixture": "node scripts/gen-proof-fixture.mjs"
   },
   "devDependencies": {
-    "vitepress": "^1.6.3"
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
+    "poseidon-lite": "^0.3.0",
+    "snarkjs": "^0.7.6",
+    "vitepress": "^1.6.3",
+    "viem": "^2.21.0"
   }
 }

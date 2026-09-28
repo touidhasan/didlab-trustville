@@ -20,8 +20,13 @@ contracts/broadcast/**/dry-run/
 *.log
 .vite/
 # NOTE: dist/ is committed on purpose — cPanel publishes it.
-services/rain-reporter/keys/
 
-# Foundry run artifacts and the local anvil deployment — regenerated, never shared
-contracts/broadcast/
-deployments/31337.json
+# VitePress build output. A gitignore pattern containing a slash is anchored to this
+# file's directory, so a bare .vitepress/dist never matched docs/.vitepress/dist.
+**/.vitepress/cache/
+**/.vitepress/dist/
+
+# Module 16 circuit build. The ptau and intermediate zkeys are large and regenerable;
+# scripts/build-circuit.sh copies the three artifacts the app and the verifier need out of
+# here, and those ARE committed -- the browser has to fetch them at runtime.
+build/circuit/

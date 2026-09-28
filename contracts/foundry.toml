@@ -8,7 +8,12 @@ solc_version = "0.8.24"
 evm_version = "paris"   # conservative target for the DIDLab Besu chain
 optimizer = true
 optimizer_runs = 200
-fs_permissions = [{ access = "read-write", path = "../deployments" }]
+# Deployment scripts write addresses; the module 16 proof test reads its fixture. Nothing
+# else is readable -- fs access in tests is off by default for good reason.
+fs_permissions = [
+  { access = "read-write", path = "../deployments" },
+  { access = "read", path = "./test/fixtures" },
+]
 
 remappings = [
   "forge-std/=lib/forge-std/src/",
@@ -32,3 +37,6 @@ didlab = "https://eth.didlab.org"
 
 [fmt]
 line_length = 100
+# Generated files. Formatting them would be undone the next time they are regenerated, and
+# CI's `forge fmt --check` would fail on a file nobody wrote.
+ignore = ["src/PoseidonT3.sol", "src/Groth16Verifier.sol"]
