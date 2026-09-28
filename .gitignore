@@ -30,3 +30,7 @@ contracts/broadcast/**/dry-run/
 # scripts/build-circuit.sh copies the three artifacts the app and the verifier need out of
 # here, and those ARE committed -- the browser has to fetch them at runtime.
 build/circuit/
+
+# Service keys live on the machine that runs the service, never here.
+services/*/keys/
+*.key.json
