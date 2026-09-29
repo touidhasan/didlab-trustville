@@ -140,6 +140,12 @@ the size of the crowd, the account that paid the gas, and the clock.
 | D4c | 15 Swap and lending | Live · pool seeded 1,000 TVD / 1,000 GRAIN |
 | D5 | Six lab specs, module guides, CI, admin panel | Live |
 | D6 | 16 Zero-knowledge selective disclosure | Live · proving in the browser |
+| **S** | **Every module to market standard** | **In progress** — [the standard](docs/STANDARD.md) |
+
+**All sixteen modules have a first version.** The second phase brings each one up to
+[a written standard](docs/STANDARD.md): measured against the production system it teaches,
+audit-grade tests, verified and documented, and a production-quality stop in the town. CI
+enforces the measurable parts, one module at a time, through `contracts/hardened.txt`.
 
 Beyond the modules themselves, the town carries:
 
@@ -313,7 +319,9 @@ Durations are bounded, not fixed, so the same contracts suit a lab and a homewor
 
 ## Rules
 
-- This repository is public. Never commit private keys, mnemonics or `.env` files.
+- This repository is public. Never commit private keys, mnemonics or `.env` files. Run
+  `npm run hooks` once after cloning: it installs a pre-commit check that refuses anything
+  key-shaped **before** the commit exists. CI runs the same check, but by then it is public.
 - Only textbook designs live here. Research-stage designs stay out.
 - No student names or grades on chain; wallet addresses stay pseudonymous.
 - Anything students can call is open by design and rate-limited by the contract, so a

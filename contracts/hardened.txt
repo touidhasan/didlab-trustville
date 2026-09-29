@@ -1,0 +1,9 @@
+# Contracts held to the market standard. See docs/STANDARD.md.
+#
+# One contract name per line. CI enforces every gate — NatSpec, coverage floors, Slither —
+# for the contracts listed here, and only reports on the rest. A module's hardening pull
+# request adds its contracts to this file in the same commit that brings them up to
+# standard, so the list can only ever describe code that already passes.
+#
+# Removing a name is allowed and should be rare. The pull request that does it explains
+# why, in the description, where a reviewer will see it.

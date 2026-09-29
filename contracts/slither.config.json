@@ -1,0 +1,4 @@
+{
+  "filter_paths": "(lib/|test/|script/|src/Groth16Verifier.sol|src/PoseidonT3.sol)",
+  "exclude_dependencies": true
+}

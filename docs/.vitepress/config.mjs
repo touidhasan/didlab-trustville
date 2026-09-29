@@ -53,6 +53,7 @@ export default defineConfig({
     nav: [
       { text: 'Labs', link: '/labs/' },
       { text: 'Modules', link: '/modules/' },
+      { text: 'Standard', link: '/STANDARD' },
       { text: 'Trustville', link: 'https://dapp.didlab.org' },
       { text: 'Code', link: 'https://github.com/touidhasan/didlab-trustville' },
     ],
@@ -79,7 +80,10 @@ export default defineConfig({
       '/modules/': [
         {
           text: 'Module guides',
-          items: [{ text: 'How to read these', link: '/modules/' }],
+          items: [
+            { text: 'How to read these', link: '/modules/' },
+            { text: 'The market standard', link: '/STANDARD' },
+          ],
         },
         {
           text: 'Town Hall',

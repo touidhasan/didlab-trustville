@@ -3,11 +3,19 @@ name: CI
 # Every pull request runs this. A red check is not a formality to argue with -- it is the
 # same gate that stands between you and a deploy in a real team, and it is the reason
 # "works on my machine" stopped being an acceptable sentence some time in the 2000s.
+#
+# The corollary: a check that is ALWAYS red is worse than none, because everyone learns to
+# ignore the colour. Until 2026-09-29 the secrets job failed on every push -- on role hashes
+# and a well-known test key -- and so nobody was looking when it mattered. Every job here
+# is expected to be green on main. If one is not, that is the first thing to fix.
 
 on:
   pull_request:
   push:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   contracts:
@@ -17,13 +25,18 @@ jobs:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
 
+      # The Foundry version lives in contracts/.foundry-version, so CI and every laptop use
+      # the same one. "stable" is a moving target: an unpinned toolchain reformatted 38 files
+      # nobody had touched and turned `forge fmt --check` red for no reason in the code.
+      - id: foundry
+        run: echo "version=$(tr -d '[:space:]' < contracts/.foundry-version)" >> "$GITHUB_OUTPUT"
       - uses: foundry-rs/foundry-toolchain@v1
-        with: { version: stable }
+        with: { version: "${{ steps.foundry.outputs.version }}" }
 
-      - name: Install libraries if they are not vendored
+      - name: Install libraries if they are not vendored (pinned)
         working-directory: contracts
         run: |
-          [ -d lib/forge-std ] || forge install foundry-rs/forge-std --no-git
+          [ -d lib/forge-std ] || forge install foundry-rs/forge-std@v1.16.2 --no-git
           [ -d lib/openzeppelin-contracts ] || forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git
 
       - name: Build (optimized — this is what would be deployed)
@@ -37,6 +50,70 @@ jobs:
       - name: Formatting
         working-directory: contracts
         run: forge fmt --check
+
+  gates:
+    name: Market-standard gates
+    runs-on: ubuntu-latest
+    # Code scanning upload. Read-only everywhere else.
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+
+      - id: foundry
+        run: echo "version=$(tr -d '[:space:]' < contracts/.foundry-version)" >> "$GITHUB_OUTPUT"
+      - uses: foundry-rs/foundry-toolchain@v1
+        with: { version: "${{ steps.foundry.outputs.version }}" }
+
+      - name: Install libraries if they are not vendored (pinned)
+        working-directory: contracts
+        run: |
+          [ -d lib/forge-std ] || forge install foundry-rs/forge-std@v1.16.2 --no-git
+          [ -d lib/openzeppelin-contracts ] || forge install OpenZeppelin/openzeppelin-contracts@v5.0.2 --no-git
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install slither-analyzer==0.11.6
+
+      # Slither exits non-zero whenever it finds anything at all, including style notes. The
+      # decision about what blocks belongs to scripts/gates.py, which reads the JSON; so the
+      # exit code is ignored here, and the step fails only if no report was written.
+      - name: Slither
+        working-directory: contracts
+        run: |
+          slither . --json slither.json --sarif slither.sarif > slither.log 2>&1 || true
+          test -s slither.json || { cat slither.log; exit 1; }
+
+      - name: Coverage
+        working-directory: contracts
+        run: forge coverage --report lcov --report summary --no-match-coverage '(test|script|lib)/'
+
+      # Strict for contracts/hardened.txt, silent about everything else.
+      - name: NatSpec gate
+        run: python3 scripts/gates.py natspec
+      - name: Coverage gate
+        run: python3 scripts/gates.py coverage
+      - name: Slither gate
+        run: python3 scripts/gates.py slither
+
+      # The road ahead: every contract, reported, never failing.
+      - name: Where every contract stands
+        if: always()
+        run: |
+          python3 scripts/gates.py coverage --all || true
+          python3 scripts/gates.py slither --all || true
+
+      # Findings appear under Security → Code scanning, annotated on the pull request's diff.
+      # Forks cannot write security events, so this never fails the run.
+      - name: Upload Slither to code scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: contracts/slither.sarif
+          category: slither
 
   app:
     name: Frontend — build
@@ -72,26 +149,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Look for keys and env files
-        run: |
-          set -e
-          # A 64-hex-character string is what a private key looks like. There is no good
-          # reason for one to be in a diff, and every reason to catch it before it is
-          # public and permanent.
-          # Two generated files legitimately contain long runs of hex and no secret:
-          # PoseidonT3.sol embeds circomlib's compiled hasher as creation bytecode, and
-          # Groth16Verifier.sol is snarkjs's output. Both are exempted BY NAME rather than
-          # by excluding contracts/src, because a blanket exemption on the source tree would
-          # quietly turn this check off for the code it exists to protect.
-          if git grep -nIE '\b(0x)?[0-9a-fA-F]{64}\b' -- \
-               ':!contracts/test' ':!contracts/broadcast' ':!dist' ':!*.lock' \
-               ':!app/src/abi/generated.js' ':!deployments' ':!docs' \
-               ':!contracts/src/PoseidonT3.sol' ':!contracts/src/Groth16Verifier.sol' \
-               ':!app/public/zk'; then
-            echo "::error::Something that looks like a private key is in the diff."
-            exit 1
-          fi
-          if git ls-files | grep -E '(^|/)\.env$'; then
-            echo "::error::A .env file is committed."
-            exit 1
-          fi
+      # The same script the pre-commit hook runs (`npm run hooks` installs it). Here it is
+      # the backstop for anyone who has not installed the hook; the hook is the defence,
+      # because by the time this job runs, the commit is already public.
+      - run: bash scripts/check-secrets.sh

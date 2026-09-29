@@ -34,3 +34,9 @@ build/circuit/
 # Service keys live on the machine that runs the service, never here.
 services/*/keys/
 *.key.json
+
+# Gate reports, regenerated on every run (scripts/gates.py)
+contracts/lcov.info
+contracts/slither.json
+contracts/slither.sarif
+contracts/slither.log

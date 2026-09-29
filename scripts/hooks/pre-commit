@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Runs before every commit, on the commit's own contents. Installed by `npm run hooks`,
+# which points git's core.hooksPath at this directory — so the hook is versioned with the
+# repo and updates itself on pull, instead of living as an untracked file in .git/hooks
+# that nobody remembers to copy.
+#
+# Bypassing it (`git commit --no-verify`) is possible and sometimes right. It is never right
+# for a commit that touches keys/, .env or anything a script generated from a wallet.
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+
+"$ROOT/scripts/check-secrets.sh" --staged
+
+# Formatting, only if Solidity is staged and forge is installed. Cheap, and it saves a
+# round trip through CI for the most common red check there is.
+if git diff --cached --name-only --diff-filter=ACMR | grep -q '^contracts/.*\.sol$'; then
+  if command -v forge >/dev/null 2>&1; then
+    (cd "$ROOT/contracts" && forge fmt --check >/dev/null 2>&1) || {
+      echo "forge fmt: Solidity is not formatted. Run: (cd contracts && forge fmt)"
+      exit 1
+    }
+  fi
+fi
