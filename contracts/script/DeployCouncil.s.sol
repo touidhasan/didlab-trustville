@@ -28,8 +28,9 @@ contract DeployCouncil is Script {
         uint256 timelockDelay = vm.envOr("TIMELOCK_DELAY", uint256(120));
         uint256 threshold = vm.envOr("TREASURY_THRESHOLD", uint256(1));
 
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         string memory json = vm.readFile(path);
         address passportAddr = vm.parseJsonAddress(json, ".contracts.TrustvillePassport");
         address voteTokenAddr = vm.parseJsonAddress(json, ".contracts.VoteToken");
@@ -52,23 +53,33 @@ contract DeployCouncil is Script {
 
         address[] memory owners = new address[](1);
         owners[0] = townAdmin; // the admin adds student signers through the multisig itself
-        TownTreasury treasury = new TownTreasury(owners, threshold, TrustvillePassport(passportAddr));
+        TownTreasury treasury =
+            new TownTreasury(owners, threshold, TrustvillePassport(passportAddr));
         vm.stopBroadcast();
 
-        require(!timelock.hasRole(timelock.DEFAULT_ADMIN_ROLE(), deployer), "timelock still has an admin");
-        require(timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor)), "governor cannot propose");
+        require(
+            !timelock.hasRole(timelock.DEFAULT_ADMIN_ROLE(), deployer),
+            "timelock still has an admin"
+        );
+        require(
+            timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor)), "governor cannot propose"
+        );
 
         _record("TownTimelock", address(timelock));
         _record("TownGovernor", address(governor));
         _record("TownTreasury", address(treasury));
 
         console.log("");
-        console.log("Voting delay / period / timelock (seconds):", votingDelay, votingPeriod, timelockDelay);
-        console.log("Timelock holds the governed funds. Send it TVD to give the Council something to spend.");
+        console.log(
+            "Voting delay / period / timelock (seconds):", votingDelay, votingPeriod, timelockDelay
+        );
+        console.log(
+            "Timelock holds the governed funds. Send it TVD to give the Council something to spend."
+        );
         console.log("NEXT, as the ADMIN:");
         console.log(
             string.concat(
-                'cast send ',
+                "cast send ",
                 vm.toString(passportAddr),
                 ' "grantRole(bytes32,address)" 0x57980102bbeb8858f40747983e69e30ef38ad79e5d2161e7bb937ea9df8528c8 ',
                 vm.toString(address(treasury)),
@@ -79,8 +90,9 @@ contract DeployCouncil is Script {
     }
 
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         vm.writeJson(vm.toString(addr), path, string.concat(".contracts.", name));
         vm.writeJson(vm.toString(block.timestamp), path, ".updated");
         console.log(name, addr);

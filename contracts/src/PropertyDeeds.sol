@@ -37,7 +37,9 @@ contract PropertyDeeds is ERC721, AccessControl, Stamping {
     uint256 private _nextId = 1;
     mapping(uint256 => Property) private _props;
 
-    event PropertyRegistered(uint256 indexed id, address indexed registrant, string addressLine, bytes32 docHash);
+    event PropertyRegistered(
+        uint256 indexed id, address indexed registrant, string addressLine, bytes32 docHash
+    );
     event PropertyCertified(uint256 indexed id, address indexed by, address indexed owner);
     event CertificationCleared(uint256 indexed id, address indexed previousOwner);
 
@@ -102,7 +104,12 @@ contract PropertyDeeds is ERC721, AccessControl, Stamping {
         return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
     }
 
-    function supportsInterface(bytes4 id) public view override(ERC721, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 id)
+        public
+        view
+        override(ERC721, AccessControl)
+        returns (bool)
+    {
         return super.supportsInterface(id);
     }
 

@@ -24,7 +24,9 @@ contract ResidentRegistry is AccessControl {
     /// Students register themselves while this is true; the admin can close it after a term.
     bool public openRegistration = true;
 
-    event ResidentRegistered(address indexed resident, bytes32 credentialHash, address registeredBy);
+    event ResidentRegistered(
+        address indexed resident, bytes32 credentialHash, address registeredBy
+    );
     event ResidentRevoked(address indexed resident, address revokedBy);
     event RegistrationOpened(bool open);
 
@@ -45,7 +47,10 @@ contract ResidentRegistry is AccessControl {
     }
 
     /// @notice Register someone else — for students without a working wallet yet.
-    function registerFor(address resident, bytes32 credentialHash) external onlyRole(REGISTRAR_ROLE) {
+    function registerFor(address resident, bytes32 credentialHash)
+        external
+        onlyRole(REGISTRAR_ROLE)
+    {
         _register(resident, credentialHash);
     }
 
@@ -73,8 +78,9 @@ contract ResidentRegistry is AccessControl {
 
     function _register(address resident, bytes32 credentialHash) internal {
         if (_residents[resident].since != 0) revert AlreadyRegistered();
-        _residents[resident] =
-            Resident({since: uint64(block.timestamp), revokedAt: 0, credentialHash: credentialHash});
+        _residents[resident] = Resident({
+            since: uint64(block.timestamp), revokedAt: 0, credentialHash: credentialHash
+        });
         unchecked {
             residentCount++;
         }

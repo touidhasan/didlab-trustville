@@ -20,8 +20,9 @@ contract DeployCharity is Script {
     function run() external {
         address townAdmin = vm.envAddress("TOWN_ADMIN");
 
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         string memory json = vm.readFile(path);
         address passportAddr = vm.parseJsonAddress(json, ".contracts.TrustvillePassport");
         address tokenAddr = vm.parseJsonAddress(json, ".contracts.TownToken");
@@ -59,8 +60,9 @@ contract DeployCharity is Script {
     }
 
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         vm.writeJson(vm.toString(addr), path, string.concat(".contracts.", name));
         vm.writeJson(vm.toString(block.timestamp), path, ".updated");
         console.log(name, addr);

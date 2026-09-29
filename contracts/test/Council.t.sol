@@ -56,7 +56,8 @@ contract CouncilTest is Test {
 
         address[] memory none = new address[](0);
         timelock = new TownTimelock(TIMELOCK_DELAY, none, none, deployer);
-        governor = new TownGovernor(IVotes(address(votes)), timelock, VOTING_DELAY, VOTING_PERIOD, 0);
+        governor =
+            new TownGovernor(IVotes(address(votes)), timelock, VOTING_DELAY, VOTING_PERIOD, 0);
 
         timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
         timelock.grantRole(timelock.CANCELLER_ROLE(), address(governor));
@@ -107,7 +108,9 @@ contract CouncilTest is Test {
         uint256 id = treasury.propose(address(token), 0, data, "pay the builder");
         assertEq(treasury.get(id).confirmations, 1); // proposing confirms
 
-        vm.expectRevert(abi.encodeWithSelector(TownTreasury.NotEnoughConfirmations.selector, uint32(1), 2));
+        vm.expectRevert(
+            abi.encodeWithSelector(TownTreasury.NotEnoughConfirmations.selector, uint32(1), 2)
+        );
         treasury.execute(id);
 
         vm.prank(ben);
@@ -137,7 +140,9 @@ contract CouncilTest is Test {
         treasury.revokeConfirmation(id);
         assertEq(treasury.get(id).confirmations, 1);
 
-        vm.expectRevert(abi.encodeWithSelector(TownTreasury.NotEnoughConfirmations.selector, uint32(1), 2));
+        vm.expectRevert(
+            abi.encodeWithSelector(TownTreasury.NotEnoughConfirmations.selector, uint32(1), 2)
+        );
         treasury.execute(id);
     }
 
@@ -194,7 +199,12 @@ contract CouncilTest is Test {
 
     function _proposePayment(address who, uint256 amount, string memory description)
         internal
-        returns (uint256 id, address[] memory targets, uint256[] memory values, bytes[] memory calldatas)
+        returns (
+            uint256 id,
+            address[] memory targets,
+            uint256[] memory values,
+            bytes[] memory calldatas
+        )
     {
         targets = new address[](1);
         values = new uint256[](1);

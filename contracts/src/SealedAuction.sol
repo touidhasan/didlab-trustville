@@ -42,7 +42,9 @@ contract SealedAuction is Stamping {
     mapping(uint256 => mapping(address => bool)) public revealed;
     mapping(address => uint256) public refunds;
 
-    event AuctionCreated(uint256 indexed id, address indexed seller, string title, uint64 commitEnd, uint64 revealEnd);
+    event AuctionCreated(
+        uint256 indexed id, address indexed seller, string title, uint64 commitEnd, uint64 revealEnd
+    );
     event BidCommitted(uint256 indexed id, address indexed bidder);
     event BidRevealed(uint256 indexed id, address indexed bidder, uint256 amount, bool leading);
     event Settled(uint256 indexed id, address indexed winner, uint256 amount);
@@ -65,10 +67,12 @@ contract SealedAuction is Stamping {
         token = token_;
     }
 
-    function createAuction(string calldata title, uint256 productId, uint64 commitSecs, uint64 revealSecs)
-        external
-        returns (uint256 id)
-    {
+    function createAuction(
+        string calldata title,
+        uint256 productId,
+        uint64 commitSecs,
+        uint64 revealSecs
+    ) external returns (uint256 id) {
         // Bounds only: the seller picks the pace. Thirty seconds is enough to demonstrate
         // commit-reveal in a lecture; a week suits a real sale.
         if (commitSecs < MIN_PHASE || revealSecs < MIN_PHASE) revert BadPhaseLength();
@@ -106,12 +110,16 @@ contract SealedAuction is Stamping {
     /// Reveal moves the tokens: the winner's stay in the contract, losers become refunds.
     function revealBid(uint256 id, uint256 amount, bytes32 salt) external {
         Auction storage a = _at(id);
-        if (block.timestamp < a.commitEnd || block.timestamp >= a.revealEnd) revert NotInRevealPhase();
+        if (block.timestamp < a.commitEnd || block.timestamp >= a.revealEnd) {
+            revert NotInRevealPhase();
+        }
 
         bytes32 commitment = commitmentOf[id][msg.sender];
         if (commitment == bytes32(0)) revert NothingCommitted();
         if (revealed[id][msg.sender]) revert AlreadyRevealed();
-        if (keccak256(abi.encodePacked(msg.sender, amount, salt)) != commitment) revert BadReveal();
+        if (keccak256(abi.encodePacked(msg.sender, amount, salt)) != commitment) {
+            revert BadReveal();
+        }
 
         revealed[id][msg.sender] = true;
         token.safeTransferFrom(msg.sender, address(this), amount);

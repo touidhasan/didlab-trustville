@@ -60,12 +60,25 @@ contract RentEscrow is AccessControl, Stamping {
     Lease[] private _leases; // index + 1 == public id
     mapping(address => uint256[]) private _byParty;
 
-    event LeaseOffered(uint256 indexed id, address indexed landlord, address indexed tenant, uint256 rent, uint256 deposit, uint64 endsAt);
+    event LeaseOffered(
+        uint256 indexed id,
+        address indexed landlord,
+        address indexed tenant,
+        uint256 rent,
+        uint256 deposit,
+        uint64 endsAt
+    );
     event LeaseAccepted(uint256 indexed id, address indexed tenant, uint256 deposit);
-    event RentPaid(uint256 indexed id, address indexed tenant, uint256 amount, uint32 paymentNumber);
-    event DepositClaimed(uint256 indexed id, address indexed landlord, uint256 amount, string reason);
+    event RentPaid(
+        uint256 indexed id, address indexed tenant, uint256 amount, uint32 paymentNumber
+    );
+    event DepositClaimed(
+        uint256 indexed id, address indexed landlord, uint256 amount, string reason
+    );
     event DepositReturned(uint256 indexed id, address indexed tenant, uint256 amount);
-    event ClaimResolved(uint256 indexed id, address indexed arbiter, uint256 toLandlord, uint256 toTenant);
+    event ClaimResolved(
+        uint256 indexed id, address indexed arbiter, uint256 toLandlord, uint256 toTenant
+    );
 
     error NotTheDeedOwner(address owner);
     error NoSuchLease();
@@ -162,7 +175,9 @@ contract RentEscrow is AccessControl, Stamping {
         if (msg.sender != l.landlord) revert NotTheLandlord();
         if (l.state != State.Active) revert WrongState(l.state);
         if (block.timestamp < l.endsAt) revert LeaseNotEnded(l.endsAt);
-        if (block.timestamp >= l.endsAt + l.claimWindow) revert ClaimWindowClosed(l.endsAt + l.claimWindow);
+        if (block.timestamp >= l.endsAt + l.claimWindow) {
+            revert ClaimWindowClosed(l.endsAt + l.claimWindow);
+        }
         if (amount > l.deposit) revert ClaimTooLarge(l.deposit);
 
         l.state = State.Claimed;

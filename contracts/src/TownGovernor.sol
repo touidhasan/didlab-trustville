@@ -2,12 +2,17 @@
 pragma solidity 0.8.24;
 
 import {Governor} from "@openzeppelin/contracts/governance/Governor.sol";
-import {GovernorCountingSimple} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import {
+    GovernorCountingSimple
+} from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import {GovernorSettings} from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
-import {GovernorTimelockControl} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import {
+    GovernorTimelockControl
+} from "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import {GovernorVotes} from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import {GovernorVotesQuorumFraction} from
-    "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import {
+    GovernorVotesQuorumFraction
+} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import {IGovernor} from "@openzeppelin/contracts/governance/IGovernor.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
@@ -39,7 +44,13 @@ contract TownGovernor is
     /// Every proposal id, so the UI can list them without an indexer.
     uint256[] private _proposalIds;
 
-    constructor(IVotes token_, TimelockController timelock_, uint48 votingDelay_, uint32 votingPeriod_, uint256 proposalThreshold_)
+    constructor(
+        IVotes token_,
+        TimelockController timelock_,
+        uint48 votingDelay_,
+        uint32 votingPeriod_,
+        uint256 proposalThreshold_
+    )
         Governor("Trustville Council")
         GovernorSettings(votingDelay_, votingPeriod_, proposalThreshold_)
         GovernorVotes(token_)
@@ -86,7 +97,12 @@ contract TownGovernor is
         return super.votingPeriod();
     }
 
-    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
+    function proposalThreshold()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
         return super.proposalThreshold();
     }
 
@@ -146,7 +162,12 @@ contract TownGovernor is
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 
-    function _executor() internal view override(Governor, GovernorTimelockControl) returns (address) {
+    function _executor()
+        internal
+        view
+        override(Governor, GovernorTimelockControl)
+        returns (address)
+    {
         return super._executor();
     }
 }

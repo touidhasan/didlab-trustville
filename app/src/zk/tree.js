@@ -1,4 +1,10 @@
-import { poseidon1, poseidon2 } from 'poseidon-lite';
+// The per-width entry points, NOT the package root. `poseidon-lite` exports poseidon1
+// through poseidon16, and each width carries its own table of round constants; importing
+// the root pulls in all sixteen and adds roughly 600 kB to the bundle for fifteen widths
+// nothing here uses. Tree-shaking cannot help — the constants are data, and data is
+// reachable. Measured: 1,297 kB main chunk from the root import, 676 kB from these two.
+import { poseidon1 } from 'poseidon-lite/poseidon1';
+import { poseidon2 } from 'poseidon-lite/poseidon2';
 
 /**
  * The same incremental Merkle tree PrivacyLab.sol builds, in JavaScript.
@@ -94,10 +100,23 @@ export function pathFor(tree, leafIndex) {
   return { pathElements, pathIndices };
 }
 
-/** A fresh secret. `crypto.getRandomValues` in a browser, `webcrypto` under Node. */
+/**
+ * A fresh secret.
+ *
+ * `globalThis.crypto` is the Web Crypto API in a browser and, since Node 19, the same
+ * object under Node — so one line covers both and no bundler has to be told to leave a
+ * `require` alone. Which generator this uses is not a detail: `Math.random` here would
+ * produce secrets an attacker can enumerate, and every proof built on one would be
+ * forgeable by anyone who noticed. There is no way to tell from the outside that it
+ * happened.
+ */
 export function randomSecret() {
+  const c = globalThis.crypto;
+  if (!c?.getRandomValues) {
+    throw new Error('no cryptographic random source — refusing to invent a secret');
+  }
   const bytes = new Uint8Array(31); // 248 bits, always below the field modulus
-  (globalThis.crypto ?? require('node:crypto').webcrypto).getRandomValues(bytes);
+  c.getRandomValues(bytes);
   let out = 0n;
   for (const b of bytes) out = (out << 8n) | BigInt(b);
   return out;

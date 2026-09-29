@@ -22,6 +22,7 @@ export const MODULES = {
   13: { title: 'Charity', slug: '13-charity' },
   14: { title: 'Insurer and oracle', slug: '14-insurer' },
   15: { title: 'Swap and lending', slug: '15-defi' },
+  16: { title: 'Zero-knowledge disclosure', slug: '16-zero-knowledge' },
 };
 
 /** The index page for all of them. */

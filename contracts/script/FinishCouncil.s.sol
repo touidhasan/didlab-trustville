@@ -33,14 +33,20 @@ contract FinishCouncil is Script {
         TownGovernor governor = TownGovernor(payable(vm.envAddress("GOVERNOR")));
         uint256 threshold = vm.envOr("TREASURY_THRESHOLD", uint256(1));
 
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
-        address passportAddr = vm.parseJsonAddress(vm.readFile(path), ".contracts.TrustvillePassport");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
+        address passportAddr =
+            vm.parseJsonAddress(vm.readFile(path), ".contracts.TrustvillePassport");
         require(passportAddr != address(0), "D1 not deployed");
 
         // Read the wiring BEFORE broadcasting: a failed Council is worth stopping early.
-        require(address(governor.timelock()) == address(timelock), "governor points at another timelock");
-        require(timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor)), "governor cannot propose");
+        require(
+            address(governor.timelock()) == address(timelock), "governor points at another timelock"
+        );
+        require(
+            timelock.hasRole(timelock.PROPOSER_ROLE(), address(governor)), "governor cannot propose"
+        );
         require(timelock.hasRole(timelock.EXECUTOR_ROLE(), address(0)), "nobody can execute");
         bytes32 adminRole = timelock.DEFAULT_ADMIN_ROLE();
 
@@ -49,7 +55,8 @@ contract FinishCouncil is Script {
 
         address[] memory owners = new address[](1);
         owners[0] = townAdmin; // the admin adds student signers through the multisig itself
-        TownTreasury treasury = new TownTreasury(owners, threshold, TrustvillePassport(passportAddr));
+        TownTreasury treasury =
+            new TownTreasury(owners, threshold, TrustvillePassport(passportAddr));
         vm.stopBroadcast();
 
         _record("TownTimelock", address(timelock));
@@ -57,11 +64,13 @@ contract FinishCouncil is Script {
         _record("TownTreasury", address(treasury));
 
         console.log("");
-        console.log("Timelock holds the governed funds. Send it TVD to give the Council something to spend.");
+        console.log(
+            "Timelock holds the governed funds. Send it TVD to give the Council something to spend."
+        );
         console.log("NEXT, as the ADMIN:");
         console.log(
             string.concat(
-                'cast send ',
+                "cast send ",
                 vm.toString(passportAddr),
                 ' "grantRole(bytes32,address)" 0x57980102bbeb8858f40747983e69e30ef38ad79e5d2161e7bb937ea9df8528c8 ',
                 vm.toString(address(treasury)),
@@ -72,12 +81,16 @@ contract FinishCouncil is Script {
 
         // Checked last so the addresses above are written either way, but still fatal: a
         // Timelock with a live admin is a treasury one key can drain.
-        require(!timelock.hasRole(adminRole, deployer), "deployer is STILL admin of the timelock - renounce first");
+        require(
+            !timelock.hasRole(adminRole, deployer),
+            "deployer is STILL admin of the timelock - renounce first"
+        );
     }
 
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         vm.writeJson(vm.toString(addr), path, string.concat(".contracts.", name));
         vm.writeJson(vm.toString(block.timestamp), path, ".updated");
         console.log(name, addr);

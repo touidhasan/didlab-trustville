@@ -21,19 +21,24 @@ import {VoteToken} from "../src/VoteToken.sol";
 contract DeployHousing is Script {
     function run() external {
         address townAdmin = vm.envAddress("TOWN_ADMIN");
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         string memory json = vm.readFile(path);
 
         address registryAddr = vm.parseJsonAddress(json, ".contracts.ResidentRegistry");
         address passportAddr = vm.parseJsonAddress(json, ".contracts.TrustvillePassport");
         address tokenAddr = vm.parseJsonAddress(json, ".contracts.TownToken");
-        require(registryAddr != address(0) && passportAddr != address(0) && tokenAddr != address(0), "D1 not deployed");
+        require(
+            registryAddr != address(0) && passportAddr != address(0) && tokenAddr != address(0),
+            "D1 not deployed"
+        );
         require(townAdmin != address(0), "TOWN_ADMIN not set");
 
         vm.startBroadcast();
-        PropertyDeeds deeds =
-            new PropertyDeeds(townAdmin, ResidentRegistry(registryAddr), TrustvillePassport(passportAddr));
+        PropertyDeeds deeds = new PropertyDeeds(
+            townAdmin, ResidentRegistry(registryAddr), TrustvillePassport(passportAddr)
+        );
         RentEscrow leases = new RentEscrow(
             townAdmin, IERC20(tokenAddr), IERC721(address(deeds)), TrustvillePassport(passportAddr)
         );
@@ -49,7 +54,7 @@ contract DeployHousing is Script {
         console.log("NEXT, as the ADMIN (the deployer holds no roles):");
         console.log(
             string.concat(
-                'cast send ',
+                "cast send ",
                 vm.toString(passportAddr),
                 ' "grantRole(bytes32,address)" 0x57980102bbeb8858f40747983e69e30ef38ad79e5d2161e7bb937ea9df8528c8 ',
                 vm.toString(address(deeds)),
@@ -58,7 +63,7 @@ contract DeployHousing is Script {
         );
         console.log(
             string.concat(
-                'cast send ',
+                "cast send ",
                 vm.toString(passportAddr),
                 ' "grantRole(bytes32,address)" 0x57980102bbeb8858f40747983e69e30ef38ad79e5d2161e7bb937ea9df8528c8 ',
                 vm.toString(address(leases)),
@@ -69,8 +74,9 @@ contract DeployHousing is Script {
     }
 
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         vm.writeJson(vm.toString(addr), path, string.concat(".contracts.", name));
         vm.writeJson(vm.toString(block.timestamp), path, ".updated");
         console.log(name, addr);

@@ -37,7 +37,9 @@ contract TownTreasury is Stamping {
     event OwnerAdded(address indexed owner);
     event OwnerRemoved(address indexed owner);
     event ThresholdChanged(uint256 threshold);
-    event PaymentProposed(uint256 indexed id, address indexed proposer, address indexed to, uint256 value, string memo);
+    event PaymentProposed(
+        uint256 indexed id, address indexed proposer, address indexed to, uint256 value, string memo
+    );
     event PaymentConfirmed(uint256 indexed id, address indexed owner, uint32 confirmations);
     event ConfirmationRevoked(uint256 indexed id, address indexed owner, uint32 confirmations);
     event PaymentExecuted(uint256 indexed id, address indexed to, bytes result);
@@ -65,8 +67,12 @@ contract TownTreasury is Stamping {
         _;
     }
 
-    constructor(address[] memory owners_, uint256 threshold_, TrustvillePassport passport_) Stamping(passport_) {
-        if (threshold_ == 0 || threshold_ > owners_.length) revert BadThreshold(threshold_, owners_.length);
+    constructor(address[] memory owners_, uint256 threshold_, TrustvillePassport passport_)
+        Stamping(passport_)
+    {
+        if (threshold_ == 0 || threshold_ > owners_.length) {
+            revert BadThreshold(threshold_, owners_.length);
+        }
         for (uint256 i; i < owners_.length; i++) {
             address o = owners_[i];
             if (isOwner[o]) revert AlreadyAnOwner();
@@ -88,7 +94,9 @@ contract TownTreasury is Stamping {
         returns (uint256 id)
     {
         _payments.push(
-            Payment({to: to, value: value, data: data, memo: memo, confirmations: 0, executed: false})
+            Payment({
+                to: to, value: value, data: data, memo: memo, confirmations: 0, executed: false
+            })
         );
         id = _payments.length;
         emit PaymentProposed(id, msg.sender, to, value, memo);
@@ -149,7 +157,9 @@ contract TownTreasury is Stamping {
     }
 
     function setThreshold(uint256 threshold_) external onlyTreasury {
-        if (threshold_ == 0 || threshold_ > _owners.length) revert BadThreshold(threshold_, _owners.length);
+        if (threshold_ == 0 || threshold_ > _owners.length) {
+            revert BadThreshold(threshold_, _owners.length);
+        }
         threshold = threshold_;
         emit ThresholdChanged(threshold_);
     }

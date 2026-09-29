@@ -81,8 +81,9 @@ contract DeployTown is Script {
 
     /// Writes one address into deployments/<chainid>.json, keeping every other entry.
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         if (!vm.exists(path)) {
             vm.writeFile(
                 path,

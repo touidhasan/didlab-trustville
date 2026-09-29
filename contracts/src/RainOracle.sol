@@ -108,7 +108,11 @@ contract RainOracle is AccessControl {
 
     /// The reading a policy acts on. `finalized` false means "no answer yet" — never zero
     /// dressed up as a drought.
-    function reading(uint32 period) external view returns (bool finalized, uint32 mm, uint32 count) {
+    function reading(uint32 period)
+        external
+        view
+        returns (bool finalized, uint32 mm, uint32 count)
+    {
         Reading storage r = _readings[period];
         return (r.finalized, r.mm, r.count);
     }
@@ -138,7 +142,9 @@ contract RainOracle is AccessControl {
     function _median(uint32[] storage values) private view returns (uint32) {
         uint256 n = values.length;
         uint32[] memory a = new uint32[](n);
-        for (uint256 i; i < n; i++) a[i] = values[i];
+        for (uint256 i; i < n; i++) {
+            a[i] = values[i];
+        }
 
         for (uint256 i = 1; i < n; i++) {
             uint32 key = a[i];

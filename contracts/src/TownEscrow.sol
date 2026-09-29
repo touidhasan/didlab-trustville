@@ -46,7 +46,11 @@ contract TownEscrow is AccessControl, Stamping {
     mapping(address => uint256[]) private _byParty;
 
     event OrderCreated(
-        uint256 indexed id, address indexed buyer, address indexed seller, uint256 amount, uint64 deadline
+        uint256 indexed id,
+        address indexed buyer,
+        address indexed seller,
+        uint256 amount,
+        uint64 deadline
     );
     event Released(uint256 indexed id, address indexed to, uint256 amount);
     event Refunded(uint256 indexed id, address indexed to, uint256 amount);

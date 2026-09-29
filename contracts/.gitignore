@@ -1,0 +1,4 @@
+
+# Service keys live on the machine that runs the service, never here.
+services/*/keys/
+*.key.json

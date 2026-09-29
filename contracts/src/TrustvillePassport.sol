@@ -89,7 +89,12 @@ contract TrustvillePassport is ERC721, AccessControl {
         return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
     }
 
-    function supportsInterface(bytes4 id) public view override(ERC721, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 id)
+        public
+        view
+        override(ERC721, AccessControl)
+        returns (bool)
+    {
         return id == _ERC5192_ID || super.supportsInterface(id);
     }
 
@@ -101,7 +106,11 @@ contract TrustvillePassport is ERC721, AccessControl {
     }
 
     /// Block every transfer; allow minting only. This is what "soulbound" means in code.
-    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+    function _update(address to, uint256 tokenId, address auth)
+        internal
+        override
+        returns (address)
+    {
         address from = _ownerOf(tokenId);
         if (from != address(0)) revert Soulbound();
         return super._update(to, tokenId, auth);

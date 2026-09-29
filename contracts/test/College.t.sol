@@ -122,7 +122,9 @@ contract CollegeTest is Test {
     function test_CannotRegisterSameDocumentTwice() public {
         uint256 id = _issue(ana, keccak256("ana.pdf"));
         vm.prank(college);
-        vm.expectRevert(abi.encodeWithSelector(CertificateRegistry.DocumentAlreadyRegistered.selector, id));
+        vm.expectRevert(
+            abi.encodeWithSelector(CertificateRegistry.DocumentAlreadyRegistered.selector, id)
+        );
         certs.issue(ben, "Blockchain Security", keccak256("ana.pdf"));
     }
 
@@ -276,7 +278,9 @@ contract CollegeTest is Test {
         string memory u = tickets.uri(id);
         bytes memory b = bytes(u);
         bytes memory prefix = new bytes(29);
-        for (uint256 i; i < 29; i++) prefix[i] = b[i];
+        for (uint256 i; i < 29; i++) {
+            prefix[i] = b[i];
+        }
         assertEq(string(prefix), "data:application/json;base64,");
     }
 

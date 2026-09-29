@@ -28,8 +28,9 @@ contract DeployDefi is Script {
         uint64 cooldown = uint64(vm.envOr("HARVEST_COOLDOWN", uint256(600)));
         uint256 rateBps = vm.envOr("RATE_BPS", uint256(1000));
 
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         string memory json = vm.readFile(path);
         address registryAddr = vm.parseJsonAddress(json, ".contracts.ResidentRegistry");
         address passportAddr = vm.parseJsonAddress(json, ".contracts.TrustvillePassport");
@@ -69,7 +70,9 @@ contract DeployDefi is Script {
         console.log("  1. harvest() on GrainToken until you hold enough GRAIN");
         console.log("  2. approve TownSwap for both tokens");
         console.log("  3. addLiquidity(1000e18, 1000e18, 0) -- this sets the opening price");
-        console.log("  4. approve GrainLoans for TVD, then supply(500e18) so there is something to borrow");
+        console.log(
+            "  4. approve GrainLoans for TVD, then supply(500e18) so there is something to borrow"
+        );
         console.log("");
         console.log("WARNING: GrainLoans prices collateral from the AMM spot price, which a");
         console.log("borrower can move inside one transaction. That is deliberate. See");
@@ -89,8 +92,9 @@ contract DeployDefi is Script {
     }
 
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         vm.writeJson(vm.toString(addr), path, string.concat(".contracts.", name));
         vm.writeJson(vm.toString(block.timestamp), path, ".updated");
         console.log(name, addr);

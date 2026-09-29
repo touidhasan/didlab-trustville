@@ -90,8 +90,12 @@ contract TownCharity is AccessControl, Stamping {
     event Pledged(uint256 indexed id, address indexed donor, uint256 amount, uint256 raised);
     event GoalReached(uint256 indexed id, uint256 raised);
     event EvidenceSubmitted(uint256 indexed id, uint256 indexed step, bytes32 evidence);
-    event MilestoneApproved(uint256 indexed id, uint256 indexed step, uint256 amount, address arbiter);
-    event MilestoneRejected(uint256 indexed id, uint256 indexed step, string reason, address arbiter);
+    event MilestoneApproved(
+        uint256 indexed id, uint256 indexed step, uint256 amount, address arbiter
+    );
+    event MilestoneRejected(
+        uint256 indexed id, uint256 indexed step, string reason, address arbiter
+    );
     event CampaignFailed(uint256 indexed id, uint256 raised, uint256 goal);
     event Refund(uint256 indexed id, address indexed donor, uint256 amount);
     event Completed(uint256 indexed id, uint256 total);
@@ -128,7 +132,9 @@ contract TownCharity is AccessControl, Stamping {
         uint256[] calldata amounts,
         string[] calldata what
     ) external returns (uint256 id) {
-        if (window < MIN_WINDOW || window > MAX_WINDOW) revert BadWindow();
+        if (window < MIN_WINDOW || window > MAX_WINDOW) {
+            revert BadWindow();
+        }
         if (goal == 0) revert ZeroAmount();
         if (
             amounts.length != what.length || amounts.length < MIN_MILESTONES
@@ -156,7 +162,9 @@ contract TownCharity is AccessControl, Stamping {
         id = _campaigns.length;
         for (uint256 i; i < amounts.length; i++) {
             _milestones[id].push(
-                Milestone({amount: amounts[i], what: what[i], evidence: bytes32(0), step: Step.Waiting})
+                Milestone({
+                    amount: amounts[i], what: what[i], evidence: bytes32(0), step: Step.Waiting
+                })
             );
         }
         emit CampaignCreated(id, msg.sender, goal, _campaigns[id - 1].deadline, cause);
@@ -265,7 +273,8 @@ contract TownCharity is AccessControl, Stamping {
         uint256 pledged = pledgeOf[id][msg.sender];
         if (pledged == 0) revert NothingToRefund();
 
-        uint256 owed = c.state == State.Failed ? pledged : (pledged * (c.raised - c.released)) / c.raised;
+        uint256 owed =
+            c.state == State.Failed ? pledged : (pledged * (c.raised - c.released)) / c.raised;
         refunded[id][msg.sender] = true;
         if (owed == 0) revert NothingToRefund();
 

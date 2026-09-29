@@ -73,14 +73,18 @@ module's *limitation* as the next module's problem.
 | 14 | [Insurer and oracle](14-insurer.md) | `RainOracle`, `CropInsurance` | M-of-N oracle, parametric cover |
 | 15 | [Swap and lending](15-defi.md) ⚠ | `GrainToken`, `TownSwap`, `GrainLoans` | Constant-product AMM, over-collateralised lending |
 
-### Still to come
+### Privacy Lab — proving without revealing
 
-| # | Module | Status |
-| --- | --- | --- |
-| 16 | Zero-knowledge proofs | Not yet built |
+| # | Guide | Contract | Standard or pattern |
+| --- | --- | --- | --- |
+| 16 | [Zero-knowledge selective disclosure](16-zero-knowledge.md) | `PrivacyLab` | Groth16 zk-SNARK, Merkle membership, commitment + nullifier |
 
 ⚠ **Module 15 contains a deliberate vulnerability.** It is there to be exploited, and there
 is a test that exploits it. Read the guide before you read the contract.
+
+**Module 16 is the capstone**, and it takes module 7's stated limitation as its problem: a
+certificate can only be proved by showing it. It is also the module most likely to be
+misread as stronger than it is, so half its guide is about what the proof does not hide.
 
 ## Threads that run through the whole town
 
@@ -105,6 +109,12 @@ worth asking *whom* the clock protects.
 **The oracle problem.** Modules 4, 7, 13 and 14 are four attempts at the same question: how
 does a contract learn a fact about the world? None of them solves it. Module 14 is the most
 honest about that.
+
+**What you reveal by proving.** Modules 1, 2, 7 and 16 are one argument in four parts. A
+registry proves you exist by publishing that you exist. A certificate proves you qualified
+by showing what you qualified in. Module 16 finally separates the claim from everything
+attached to it — and then spends half its guide on what the proof still leaks. Ask of every
+design here: *what does the act of proving this disclose?*
 
 **Who decides.** Almost every module ends up with a human somewhere — an arbiter, a
 certifier, a reporter, a voter. Trace where that person sits in each design, and what they

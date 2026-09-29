@@ -235,7 +235,9 @@ contract TownTest is Test {
     function _prefix(string memory s, uint256 n) internal pure returns (string memory) {
         bytes memory b = bytes(s);
         bytes memory out = new bytes(n);
-        for (uint256 i; i < n; i++) out[i] = b[i];
+        for (uint256 i; i < n; i++) {
+            out[i] = b[i];
+        }
         return string(out);
     }
 }

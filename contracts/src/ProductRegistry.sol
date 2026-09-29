@@ -35,7 +35,9 @@ contract ProductRegistry is Stamping {
     event ProductRegistered(
         uint256 indexed id, address indexed creator, string name, string origin, bytes32 docHash
     );
-    event CustodyTransferred(uint256 indexed id, address indexed from, address indexed to, string note);
+    event CustodyTransferred(
+        uint256 indexed id, address indexed from, address indexed to, string note
+    );
 
     error NotAResident();
     error NoSuchProduct();

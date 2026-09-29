@@ -176,7 +176,9 @@ contract MarketTest is Test {
         // frozen: the seller cannot claim even once the window passes
         vm.warp(block.timestamp + 2 hours);
         vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(TownEscrow.WrongState.selector, TownEscrow.State.Disputed));
+        vm.expectRevert(
+            abi.encodeWithSelector(TownEscrow.WrongState.selector, TownEscrow.State.Disputed)
+        );
         escrow.claimAfterWindow(id);
 
         vm.prank(townAdmin);
@@ -197,7 +199,9 @@ contract MarketTest is Test {
         uint256 id = _order(5 ether);
         vm.startPrank(bob);
         escrow.confirmReceipt(id);
-        vm.expectRevert(abi.encodeWithSelector(TownEscrow.WrongState.selector, TownEscrow.State.Released));
+        vm.expectRevert(
+            abi.encodeWithSelector(TownEscrow.WrongState.selector, TownEscrow.State.Released)
+        );
         escrow.confirmReceipt(id);
         vm.stopPrank();
     }
@@ -330,7 +334,8 @@ contract MarketTest is Test {
 
     function test_HashBidHelperMatchesTheContract() public view {
         assertEq(
-            auction.hashBid(bob, 7 ether, "salt"), keccak256(abi.encodePacked(bob, uint256(7 ether), bytes32("salt")))
+            auction.hashBid(bob, 7 ether, "salt"),
+            keccak256(abi.encodePacked(bob, uint256(7 ether), bytes32("salt")))
         );
     }
 }

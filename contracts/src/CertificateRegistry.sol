@@ -35,7 +35,11 @@ contract CertificateRegistry is Stamping {
     mapping(bytes32 => uint256) public idOfDocument; // hash → id, for "check this file"
 
     event CertificateIssued(
-        uint256 indexed id, address indexed issuer, address indexed holder, string course, bytes32 docHash
+        uint256 indexed id,
+        address indexed issuer,
+        address indexed holder,
+        string course,
+        bytes32 docHash
     );
     event CertificateRevoked(uint256 indexed id, address indexed issuer, string reason);
 
@@ -53,7 +57,10 @@ contract CertificateRegistry is Stamping {
 
     /// Issue a certificate to someone else. Any resident may issue — so a verifier must
     /// always ask WHO signed it, never just "is it on the chain?". That is the lesson.
-    function issue(address holder, string calldata course, bytes32 docHash) external returns (uint256 id) {
+    function issue(address holder, string calldata course, bytes32 docHash)
+        external
+        returns (uint256 id)
+    {
         if (!residents.isResident(msg.sender)) revert NotAResident();
         if (holder == msg.sender) revert SelfIssue();
         if (docHash == bytes32(0)) revert EmptyDocHash();

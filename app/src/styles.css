@@ -181,3 +181,26 @@ p { margin: 0 0 0.8em; }
   .chain-status .muted { display: none; }
   .post-form { flex-direction: column; }
 }
+
+/* the Privacy Lab — module 16 */
+.zk { border-left: 4px solid var(--navy); }
+.anon-set {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  padding: 12px 14px; margin-bottom: 14px; border-radius: 12px;
+  background: rgba(31, 42, 68, 0.06); border: 1px solid var(--line);
+}
+.anon-set > div { display: grid; gap: 2px; max-width: 52ch; }
+.secret-box {
+  overflow-wrap: anywhere; padding: 8px 10px; border-radius: 10px;
+  background: var(--bg); border: 1px dashed var(--line); font-size: 0.85rem;
+}
+.check { display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
+.check input { margin-top: 3px; flex: none; }
+.zk .post-form select,
+.zk .post-form input[type='text'],
+.zk .post-form input:not([type]) {
+  flex: 1; min-width: 150px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+  font: inherit; background: var(--bg); color: var(--ink);
+}
+.zk details { margin-top: 8px; }
+.zk details summary { cursor: pointer; color: var(--muted); }

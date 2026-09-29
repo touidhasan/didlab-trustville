@@ -50,8 +50,8 @@ export const stops = [
   },
   {
     name: 'Privacy Lab',
-    problem: 'Proving a fact without revealing your data',
-    modules: ['Zero-knowledge proofs'],
-    phase: 'D6',
+    problem: 'Proving you qualify without revealing who you are',
+    modules: ['Zero-knowledge selective disclosure'],
+    phase: 'now',
   },
 ];

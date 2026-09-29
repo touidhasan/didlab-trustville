@@ -17,8 +17,9 @@ import {TrustvillePassport} from "../src/TrustvillePassport.sol";
 /// prints them.
 contract GrantMarketRoles is Script {
     function run() external {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         string memory json = vm.readFile(path);
 
         TrustvillePassport passport =

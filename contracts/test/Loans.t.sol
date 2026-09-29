@@ -132,7 +132,9 @@ contract LoansTest is Test {
         vm.startPrank(borrower);
         loans.depositCollateral(200 ether);
         vm.expectRevert(
-            abi.encodeWithSelector(GrainLoans.WouldBeUndercollateralised.selector, 101 ether, 100 ether)
+            abi.encodeWithSelector(
+                GrainLoans.WouldBeUndercollateralised.selector, 101 ether, 100 ether
+            )
         );
         loans.borrow(101 ether);
         vm.stopPrank();
@@ -283,7 +285,9 @@ contract LoansTest is Test {
         console.log("collateral now ", collateralWorth);
         console.log("net TVD gained ", gained);
 
-        assertGt(inflated, honestPriceBefore * 3, "the price more than tripled inside one transaction");
+        assertGt(
+            inflated, honestPriceBefore * 3, "the price more than tripled inside one transaction"
+        );
         assertGt(debt, collateralWorth * 15 / 10, "the loan is far beyond its collateral");
         assertGt(
             gained,

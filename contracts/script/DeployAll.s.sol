@@ -207,13 +207,17 @@ contract DeployAll is Script {
             t.swap,
             t.loans
         ];
-        for (uint256 i; i < stampers.length; i++) passport.grantRole(STAMPER, stampers[i]);
+        for (uint256 i; i < stampers.length; i++) {
+            passport.grantRole(STAMPER, stampers[i]);
+        }
     }
 
     /* --------------------------------------------------------------------- output */
 
     function _write(Town memory t) private {
-        _path = string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        _path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         if (!vm.exists(_path)) {
             vm.writeFile(
                 _path,

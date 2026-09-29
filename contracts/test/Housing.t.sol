@@ -45,7 +45,8 @@ contract HousingTest is Test {
         registry.renounceRole(registry.REGISTRAR_ROLE(), deployer);
 
         deeds = new PropertyDeeds(townAdmin, registry, passport);
-        leases = new RentEscrow(townAdmin, IERC20(address(token)), IERC721(address(deeds)), passport);
+        leases =
+            new RentEscrow(townAdmin, IERC20(address(token)), IERC721(address(deeds)), passport);
         votes = new VoteToken(IERC20(address(token)));
         vm.stopPrank();
 

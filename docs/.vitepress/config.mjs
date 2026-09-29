@@ -37,6 +37,13 @@ export default defineConfig({
   // fails the build instead.
   ignoreDeadLinks: false,
 
+  markdown: {
+    // Shiki has no Circom grammar, so module 16's snippets would render as grey text.
+    // Circom's surface syntax is close enough to Rust's that the highlighting is right
+    // far more often than it is wrong, and the alternative is no highlighting at all.
+    languageAlias: { circom: 'rust' },
+  },
+
   head: [
     ['meta', { name: 'robots', content: 'index,follow' }],
     ['meta', { name: 'theme-color', content: '#c8802a' }],
@@ -124,6 +131,11 @@ export default defineConfig({
             { text: '14 · Insurer and oracle', link: '/modules/14-insurer' },
             { text: '15 · Swap and lending', link: '/modules/15-defi' },
           ],
+        },
+        {
+          text: 'Privacy Lab',
+          collapsed: false,
+          items: [{ text: '16 · Zero-knowledge', link: '/modules/16-zero-knowledge' }],
         },
         { text: 'Labs', items: [{ text: 'All six labs', link: '/labs/' }] },
       ],

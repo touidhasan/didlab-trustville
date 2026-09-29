@@ -77,7 +77,9 @@ contract CropInsurance is AccessControl, Stamping {
         uint256 premium,
         uint32 triggerMm
     );
-    event PolicySettled(uint256 indexed id, address indexed holder, bool paid, uint32 mm, uint256 amount);
+    event PolicySettled(
+        uint256 indexed id, address indexed holder, bool paid, uint32 mm, uint256 amount
+    );
     event TermsChanged(uint32 triggerMm, uint16 premiumBps);
 
     error ZeroAmount();
@@ -96,7 +98,9 @@ contract CropInsurance is AccessControl, Stamping {
         uint16 premiumBps_,
         TrustvillePassport passport_
     ) Stamping(passport_) {
-        if (premiumBps_ < MIN_PREMIUM_BPS || premiumBps_ > MAX_PREMIUM_BPS) revert BadTerms();
+        if (premiumBps_ < MIN_PREMIUM_BPS || premiumBps_ > MAX_PREMIUM_BPS) {
+            revert BadTerms();
+        }
         token = token_;
         oracle = oracle_;
         triggerMm = triggerMm_;

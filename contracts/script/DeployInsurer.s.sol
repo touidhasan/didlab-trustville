@@ -28,8 +28,9 @@ contract DeployInsurer is Script {
         uint32 triggerMm = uint32(vm.envOr("TRIGGER_MM", uint256(5)));
         uint16 premiumBps = uint16(vm.envOr("PREMIUM_BPS", uint256(1000)));
 
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         string memory json = vm.readFile(path);
         address passportAddr = vm.parseJsonAddress(json, ".contracts.TrustvillePassport");
         address tokenAddr = vm.parseJsonAddress(json, ".contracts.TownToken");
@@ -97,8 +98,9 @@ contract DeployInsurer is Script {
     }
 
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         vm.writeJson(vm.toString(addr), path, string.concat(".contracts.", name));
         vm.writeJson(vm.toString(block.timestamp), path, ".updated");
         console.log(name, addr);

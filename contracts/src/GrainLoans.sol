@@ -74,7 +74,11 @@ contract GrainLoans is AccessControl, Stamping {
     event Borrowed(address indexed who, uint256 amount, uint256 debt, uint256 price);
     event Repaid(address indexed who, uint256 amount, uint256 debt);
     event Liquidated(
-        address indexed borrower, address indexed liquidator, uint256 repaid, uint256 seized, uint256 price
+        address indexed borrower,
+        address indexed liquidator,
+        uint256 repaid,
+        uint256 seized,
+        uint256 price
     );
     event RateChanged(uint256 rateBps);
 

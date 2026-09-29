@@ -30,6 +30,7 @@ const NAMES = [
   'GrainToken',
   'TownSwap',
   'GrainLoans',
+  'PrivacyLab',
 ];
 
 const out = [

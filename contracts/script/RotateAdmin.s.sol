@@ -44,8 +44,9 @@ contract RotateAdmin is Script {
         require(oldAdmin != newAdmin, "the new admin must be a different account");
         require(newAdmin != address(0), "NEW_ADMIN is not set");
 
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
         _json = vm.readFile(path);
 
         _load();

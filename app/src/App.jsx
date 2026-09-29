@@ -10,6 +10,7 @@ import Insurer from './components/Insurer.jsx';
 import Market from './components/Market.jsx';
 import NoticeBoard from './components/NoticeBoard.jsx';
 import Onboarding from './components/Onboarding.jsx';
+import PrivacyLab from './components/PrivacyLab.jsx';
 import TownHall from './components/TownHall.jsx';
 import TownMap from './components/TownMap.jsx';
 import { EXPLORER, FAUCET_URL, guideUrl } from './chain.js';
@@ -93,7 +94,7 @@ export default function App() {
 
               <div>
                 <div className="module">
-                  <h3>All fifteen guides</h3>
+                  <h3>All sixteen guides</h3>
                   <p className="guide-links">
                     {Object.entries(MODULES).map(([id, m]) => (
                       <a key={id} href={guideUrl(m.slug)} target="_blank" rel="noreferrer">
@@ -103,7 +104,8 @@ export default function App() {
                   </p>
                   <p className="muted small">
                     Module 15 ships a <strong>deliberate vulnerability</strong> and a test that exploits it
-                    successfully. Read its guide before its code.
+                    successfully. Read its guide before its code. Module 16 proves something without revealing
+                    it — and its guide spends as much space on what the proof does <strong>not</strong> hide.
                   </p>
                 </div>
               </div>
@@ -120,6 +122,7 @@ export default function App() {
           <Council wallet={wallet} />
           <Charity wallet={wallet} />
           <Insurer wallet={wallet} />
+          <PrivacyLab wallet={wallet} />
           <NoticeBoard wallet={wallet} />
           <Admin wallet={wallet} />
           <TownMap />

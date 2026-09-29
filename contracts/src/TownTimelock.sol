@@ -14,7 +14,10 @@ import {TimelockController} from "@openzeppelin/contracts/governance/TimelockCon
 ///           EXECUTOR  = address(0), meaning anyone may execute a queued, matured proposal
 ///           ADMIN     = nobody, after the deployer renounces
 contract TownTimelock is TimelockController {
-    constructor(uint256 minDelay, address[] memory proposers, address[] memory executors, address admin)
-        TimelockController(minDelay, proposers, executors, admin)
-    {}
+    constructor(
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors,
+        address admin
+    ) TimelockController(minDelay, proposers, executors, admin) {}
 }

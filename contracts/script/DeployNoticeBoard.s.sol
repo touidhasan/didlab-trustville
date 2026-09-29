@@ -20,13 +20,16 @@ contract DeployNoticeBoard is Script {
         _record("TownNoticeBoard", address(board));
 
         console.log("TownNoticeBoard deployed at", address(board));
-        console.log("Next: npm run build, then commit dist/ and deployments/, then redeploy in cPanel.");
+        console.log(
+            "Next: npm run build, then commit dist/ and deployments/, then redeploy in cPanel."
+        );
     }
 
     /// Writes one address into deployments/<chainid>.json, keeping every other entry.
     function _record(string memory name, address addr) internal {
-        string memory path =
-            string.concat(vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat(
+            vm.projectRoot(), "/../deployments/", vm.toString(block.chainid), ".json"
+        );
 
         if (!vm.exists(path)) {
             vm.writeFile(

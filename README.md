@@ -107,7 +107,7 @@ chains is configuration rather than a code edit.
 | Charity | 13 Milestone crowdfunding | [13](docs/modules/13-charity.md) |
 | Insurer | 14 Parametric insurance and the oracle problem | [14](docs/modules/14-insurer.md) |
 | Exchange | 15 Swap, liquidity and lending ⚠ | [15](docs/modules/15-defi.md) |
-| Privacy Lab | 16 Zero-knowledge proofs | planned |
+| Privacy Lab | 16 Zero-knowledge selective disclosure | [16](docs/modules/16-zero-knowledge.md) |
 
 **[Every module has its own guide →](docs/modules/)** Each one follows the same shape: the
 problem, the idea, the vocabulary, how it works, the two or three lines that carry the
@@ -115,10 +115,13 @@ design, a walkthrough on the live site, the events it emits, when a plain databa
 have been better, what it does **not** fix, common mistakes, a security checklist, and
 exercises with traps in them.
 
-Two of them are worth reading even if you never run the code. [Module 14](docs/modules/14-insurer.md)
+Three of them are worth reading even if you never run the code. [Module 14](docs/modules/14-insurer.md)
 is where the chain stops being self-contained and has to trust somebody about the weather.
 [Module 15](docs/modules/15-defi.md) ships a **deliberately vulnerable** lending contract
 and a test that exploits it successfully — the bug is the lesson.
+[Module 16](docs/modules/16-zero-knowledge.md) proves you hold a certificate without
+revealing which one, and then spends half its guide on everything the proof still leaks:
+the size of the crowd, the account that paid the gas, and the clock.
 
 ---
 
@@ -136,7 +139,7 @@ and a test that exploits it successfully — the bug is the lesson.
 | D4b | 14 Oracle and parametric insurance | Live |
 | D4c | 15 Swap and lending | Live · pool seeded 1,000 TVD / 1,000 GRAIN |
 | D5 | Six lab specs, module guides, CI, admin panel | Live |
-| D6 | 16 Zero-knowledge proofs | Next |
+| D6 | 16 Zero-knowledge selective disclosure | Live · proving in the browser |
 
 Beyond the modules themselves, the town carries:
 
@@ -161,13 +164,16 @@ the Passport, and rebuild `dist/`, because addresses are baked in at build time.
 ```
 app/                    Vite + React frontend (source)
 contracts/src/          The contracts
-contracts/test/         Foundry tests, ~139 of them
+contracts/test/         Foundry tests, ~189 of them
 contracts/script/       Deployment scripts, one per phase, plus DeployAll
 deployments/<id>.json   Contract addresses per chain — read by the app
 services/rain-reporter/ The oracle nodes for module 14
+circuits/               Circom circuits for module 16
+app/public/zk/          Proving artifacts the browser fetches (wasm + zkey)
 docs/modules/           One guide per module
 scripts/local-town.sh   Local chain + full deployment + dev server
 scripts/sync-abi.mjs    Copies compiled ABIs into the frontend
+scripts/build-circuit.sh  Compiles module 16's circuit and its trusted setup
 dist/                   Built site — this is what the web host publishes
 ```
 
@@ -188,6 +194,23 @@ optimized build. A few are worth reading as documentation:
 - `test_OneLiarCannotMoveTheAnswer` / `test_AMajorityOfReportersControlsTheAnswer` — what
   M-of-N buys, and what it does not.
 - `test_TimelockIsOwnedByNobody` — the property that makes the DAO's vote mean something.
+- `PrivacyLabProof.t.sol` — submits a **real** Groth16 proof to the real generated verifier.
+  Every other module-16 test runs against a mock verifier that says yes to everything, and
+  would pass against a contract with no privacy at all. This is the one that means something.
+
+### Module 16 needs its circuit built
+
+The proving artifacts are committed, so a fresh clone can run the app and the full suite
+without installing anything extra. Rebuilding them needs [circom](https://docs.circom.io):
+
+```bash
+npm run circuit        # compile, trusted setup, export the verifier and browser artifacts
+npm run zk:fixture     # produce a real proof for the Foundry integration test
+```
+
+`contracts/src/Groth16Verifier.sol` is bound to the proving key that produced it. If you
+rebuild the circuit, the contract and `app/public/zk/` must be redeployed and republished
+**together** — mismatched halves fail every post with `BadProof` and nothing says why.
 
 ---
 

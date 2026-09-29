@@ -43,7 +43,9 @@ contract EventTickets is ERC1155, Stamping {
     EventInfo[] private _events; // index + 1 == token id
     mapping(uint256 => mapping(address => uint256)) public paidBy; // refundable amount
 
-    event EventCreated(uint256 indexed id, address indexed organiser, string name, uint256 price, uint32 capacity);
+    event EventCreated(
+        uint256 indexed id, address indexed organiser, string name, uint256 price, uint32 capacity
+    );
     event TicketsBought(uint256 indexed id, address indexed buyer, uint256 quantity, uint256 paid);
     event TicketsRedeemed(uint256 indexed id, address indexed holder, uint256 quantity);
     event EventCancelled(uint256 indexed id);

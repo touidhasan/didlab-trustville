@@ -53,7 +53,12 @@ contract TownSwap is Stamping {
     event LiquidityAdded(address indexed who, uint256 tvd, uint256 grain, uint256 shares);
     event LiquidityRemoved(address indexed who, uint256 tvd, uint256 grain, uint256 shares);
     event Swapped(
-        address indexed who, bool tvdIn, uint256 amountIn, uint256 amountOut, uint256 reserveTvd, uint256 reserveGrain
+        address indexed who,
+        bool tvdIn,
+        uint256 amountIn,
+        uint256 amountOut,
+        uint256 reserveTvd,
+        uint256 reserveGrain
     );
 
     error ZeroAmount();

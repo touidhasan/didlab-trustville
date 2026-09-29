@@ -174,7 +174,9 @@ contract SwapTest is Test {
         uint256 before = grain.balanceOf(bob);
         vm.prank(bob);
         swap.swapTvdForGrain(100 ether, 0, 0);
-        assertEq(grain.balanceOf(bob) - before, expected, "no surprises between quoting and signing");
+        assertEq(
+            grain.balanceOf(bob) - before, expected, "no surprises between quoting and signing"
+        );
     }
 
     function test_MinOutRefusesAWorsePrice() public {
