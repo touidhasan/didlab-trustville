@@ -1,7 +1,7 @@
 {
   "chainId": 252501,
   "network": "DIDLab",
-  "updated": 1790657117,
+  "updated": 1790739503,
   "contracts": {
     "ResidentRegistry": "0x30209DE180f649ea47C959dD611404ca87fdbF5e",
     "TrustvillePassport": "0xA046E4D575cE37D5024893f590D3FF74690e8211",
@@ -26,6 +26,7 @@
     "GrainLoans": "0x30CBE01e80159f633a2CB697BA3737EF95c3B264",
     "PoseidonT3": "0x77207Bf6061c0526c08803CE455Fd9D6f5E74E8b",
     "Groth16Verifier": "0x116016c1a658D01B06be7FB77FFEFeCdFd28c57c",
-    "PrivacyLab": "0x2173f0d18F5e61fCb66F186F45cfb966F8E56Eec"
+    "PrivacyLab": "0x2173f0d18F5e61fCb66F186F45cfb966F8E56Eec",
+    "TownNoticeBoard": "0xEA637E71ba0DcBf80B4DC081CA2859cE1535246A"
   }
 }
