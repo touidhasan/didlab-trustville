@@ -27,6 +27,17 @@ import {TrustvillePassport} from "../src/TrustvillePassport.sol";
 /// nobody. The old Timelock keeps any TVD it held; send the new one whatever the Council
 /// should be able to spend.
 ///
+/// If a run stops part-way — the Timelock deployed but the Governor refused, say — rerun
+/// with TIMELOCK=<that timelock> to reuse it rather than leave an orphan. It must still be
+/// waiting for its wiring (the deployer still holds its admin role).
+///
+/// Two things learned on DIDLab (2026-09-30):
+///   - The Governor costs ~4.25M gas to deploy, close to DIDLab's block gas limit, so keep
+///     --gas-estimate-multiplier at 100–102 here. At 115 the node refused the transaction.
+///   - forge writes deployments/*.json while SIMULATING, before anything is sent. When a
+///     broadcast fails, the file names contracts that were never deployed. Check every new
+///     address with `cast code <addr> --rpc-url didlab` before trusting the file.
+///
 /// Timings default to a lab session: 1 min voting delay, 10 min voting, 2 min timelock.
 /// Override with VOTING_DELAY / VOTING_PERIOD / TIMELOCK_DELAY (seconds).
 contract DeployGovernance is Script {
@@ -45,11 +56,22 @@ contract DeployGovernance is Script {
             passportAddr != address(0) && voteTokenAddr != address(0), "no passport or VoteToken"
         );
 
+        address existing = vm.envOr("TIMELOCK", address(0));
+
         vm.startBroadcast();
         (, address deployer,) = vm.readCallers();
 
-        address[] memory none = new address[](0);
-        TownTimelock timelock = new TownTimelock(timelockDelay, none, none, deployer);
+        TownTimelock timelock;
+        if (existing == address(0)) {
+            address[] memory none = new address[](0);
+            timelock = new TownTimelock(timelockDelay, none, none, deployer);
+        } else {
+            timelock = TownTimelock(payable(existing));
+            require(
+                timelock.hasRole(timelock.DEFAULT_ADMIN_ROLE(), deployer),
+                "TIMELOCK is already wired (or not ours): deploy a fresh pair instead"
+            );
+        }
         TownGovernor governor = new TownGovernor(
             IVotes(voteTokenAddr),
             timelock,
@@ -62,7 +84,10 @@ contract DeployGovernance is Script {
         timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
         timelock.grantRole(timelock.CANCELLER_ROLE(), address(governor));
         timelock.grantRole(timelock.EXECUTOR_ROLE(), address(0));
-        timelock.renounceRole(timelock.DEFAULT_ADMIN_ROLE(), deployer);
+        // Explicit gas: renouncing clears a storage slot, and the refund makes forge's
+        // estimate (gas used, after the refund) too small for the call to actually run.
+        // With the low multiplier the Governor needs, this line reverted on its own.
+        timelock.renounceRole{gas: 100_000}(timelock.DEFAULT_ADMIN_ROLE(), deployer);
         vm.stopBroadcast();
 
         require(
