@@ -92,6 +92,7 @@ export default defineConfig({
           text: 'Module guides',
           items: [
             { text: 'How to read these', link: '/modules/' },
+            { text: 'Instructor walkthrough', link: '/instructor/walkthrough' },
             { text: 'The market standard', link: '/STANDARD' },
           ],
         },
