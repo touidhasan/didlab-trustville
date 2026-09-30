@@ -17,8 +17,18 @@ export default defineConfig({
   lang: 'en-US',
 
   srcDir: '.',
-  outDir: '.vitepress/dist',
-  cleanUrls: true,
+
+  // Built two ways from the same files. On its own (`npm run docs:build`) it is a site at
+  // the root of its host. As part of `npm run build` it is published inside Trustville at
+  // /labs/, so every copy of the town — DIDLab's, a fork, a client's private town — carries
+  // its own guides and never links out to a site that might not be there.
+  base: process.env.DOCS_BASE || '/',
+  outDir: process.env.DOCS_OUT || '.vitepress/dist',
+
+  // Plain .html addresses rather than "clean" ones. Clean URLs need a server rewrite to find
+  // the file, and the town is published to plain static hosts that have none: without it,
+  // /labs/modules/05-escrow fell through to the app's index.html instead of the guide.
+  cleanUrls: false,
 
   // Student incident write-ups live in docs/incidents/. They are coursework, not course
   // material, and some of them will name a classmate's pull request. The blank template

@@ -6,7 +6,7 @@
   "scripts": {
     "setup": "npm --prefix app install",
     "dev": "npm --prefix app run dev",
-    "build": "npm --prefix app run build",
+    "build": "npm --prefix app run build && npm run docs:site",
     "preview": "npm --prefix app run preview",
     "sync-abi": "node scripts/sync-abi.mjs",
     "local": "./scripts/local-town.sh",
@@ -20,7 +20,9 @@
     "hooks": "chmod +x scripts/hooks/* scripts/check-secrets.sh && git config core.hooksPath scripts/hooks && echo \"pre-commit hook installed: secrets are checked before every commit\"",
     "secrets": "scripts/check-secrets.sh",
     "gates": "cd contracts && rm -f slither.json && (slither . --json slither.json > /dev/null 2>&1 || true) && forge coverage --report lcov --no-match-coverage \"(test|script|lib)/\" > /dev/null && cd .. && python3 scripts/gates.py natspec && python3 scripts/gates.py coverage && python3 scripts/gates.py slither",
-    "gates:all": "python3 scripts/gates.py natspec --all; python3 scripts/gates.py coverage --all; python3 scripts/gates.py slither --all"
+    "gates:all": "python3 scripts/gates.py natspec --all; python3 scripts/gates.py coverage --all; python3 scripts/gates.py slither --all",
+    "build:app": "npm --prefix app run build",
+    "docs:site": "DOCS_BASE=/labs/ DOCS_OUT=../dist/labs vitepress build docs"
   },
   "devDependencies": {
     "circomlib": "^2.0.5",

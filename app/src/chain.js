@@ -44,17 +44,18 @@ export const EXPLORER = didlab.blockExplorers?.default.url ?? '';
 /**
  * Where the module guides live.
  *
- * They are Markdown in docs/modules/ in this repository, so with no configuration the site
- * links to GitHub, which works for every fork from the moment it is cloned. Set
- * VITE_DOCS_BASE to a published docs site (a VitePress build of docs/, for instance) and
- * the links follow it -- clean URLs, no .md, which is why the helper below branches on
- * whether the base is GitHub rather than blindly appending an extension.
+ * `npm run build` publishes the guides inside the site at /labs/, so by default every copy
+ * of the town links to the guides it carries itself. Set VITE_DOCS_BASE to point elsewhere
+ * (the repository on GitHub, for a development server that has no /labs/).
  */
-export const DOCS_BASE =
-  env.VITE_DOCS_BASE || 'https://github.com/touidhasan/didlab-trustville/blob/main/docs/modules';
+export const DOCS_BASE = env.VITE_DOCS_BASE || '/labs/modules';
 
-export const guideUrl = (slug) =>
-  DOCS_BASE.includes('github.com') ? `${DOCS_BASE}/${slug}.md` : `${DOCS_BASE}/${slug}`;
+export const guideUrl = (slug) => {
+  // GitHub shows the Markdown source; the built guides are .html files, and the modules'
+  // README.md is served as index.html.
+  if (DOCS_BASE.includes('github.com')) return `${DOCS_BASE}/${slug}.md`;
+  return `${DOCS_BASE}/${slug === 'README' ? 'index' : slug}.html`;
+};
 
 export const explorerTx = (hash) => (EXPLORER ? `${EXPLORER}/tx/${hash}` : '');
 export const explorerAddress = (addr) => (EXPLORER ? `${EXPLORER}/address/${addr}` : '');

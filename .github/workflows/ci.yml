@@ -124,13 +124,17 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
 
+      # The site build now includes the module guides (published at /labs/), so it needs
+      # the root's VitePress as well as the app's own dependencies.
       - name: Install
-        run: npm run setup
+        run: npm install && npm run setup
 
       # A build failure here usually means the ABI file is out of step with the contracts.
       # Run `npm run sync-abi` after changing a contract, and commit the result.
       - name: Build
         run: npm run build
+      - name: The guides are inside the site
+        run: test -f dist/labs/modules/05-escrow.html
 
   docs:
     name: Course site — build
