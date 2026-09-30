@@ -1,1 +1,0 @@
-import{V as s,j as r,W as a}from"./index-fIW_3n5E.js";function i({ids:l}){const n=l.filter(e=>s[e]);return n.length===0?null:r.jsxs("p",{className:"guide-links",children:[r.jsx("span",{className:"guide-links-label",children:"Read first"}),n.map(e=>r.jsxs("a",{href:a(s[e].slug),target:"_blank",rel:"noreferrer",children:[e," · ",s[e].title]},e))]})}export{i as G};
