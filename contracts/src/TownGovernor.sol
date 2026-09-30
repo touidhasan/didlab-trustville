@@ -16,6 +16,8 @@ import {
 import {IGovernor} from "@openzeppelin/contracts/governance/IGovernor.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
+import {Stamping} from "./Stamping.sol";
+import {TrustvillePassport} from "./TrustvillePassport.sol";
 
 /// @title Trustville Council  (module 12) — token-voted governance
 /// @notice Problem: decisions made behind a door, and spending nobody can check. Voting in
@@ -33,14 +35,21 @@ import {TimelockController} from "@openzeppelin/contracts/governance/TimelockCon
 ///           execution       — anyone may push the button; the vote is the authority
 ///
 ///         Voting power comes from vTVD at the snapshot, and only if it was DELEGATED.
+///
+///         Stamp: module 12 goes to a resident who casts a vote WITH weight. A vote cast with
+///         zero weight -- tokens wrapped but never delegated, the module's classic mistake --
+///         is counted, and earns nothing.
 contract TownGovernor is
     Governor,
     GovernorSettings,
     GovernorCountingSimple,
     GovernorVotes,
     GovernorVotesQuorumFraction,
-    GovernorTimelockControl
+    GovernorTimelockControl,
+    Stamping
 {
+    uint16 public constant MODULE_ID = 12;
+
     /// Every proposal id, so the UI can list them without an indexer.
     uint256[] private _proposalIds;
 
@@ -49,13 +58,15 @@ contract TownGovernor is
         TimelockController timelock_,
         uint48 votingDelay_,
         uint32 votingPeriod_,
-        uint256 proposalThreshold_
+        uint256 proposalThreshold_,
+        TrustvillePassport passport_
     )
         Governor("Trustville Council")
         GovernorSettings(votingDelay_, votingPeriod_, proposalThreshold_)
         GovernorVotes(token_)
         GovernorVotesQuorumFraction(4) // 4% of wrapped supply must vote
         GovernorTimelockControl(timelock_)
+        Stamping(passport_)
     {}
 
     function proposalIds() external view returns (uint256[] memory) {
@@ -77,6 +88,20 @@ contract TownGovernor is
     }
 
     /* ----------------------------------------------------------- overrides */
+
+    /// Every way of voting (castVote, castVoteWithReason, castVoteBySig, ...) ends here, so
+    /// this is the one place to stamp. The stamp goes to the voter, not to whoever relayed
+    /// a signed vote.
+    function _castVote(
+        uint256 proposalId,
+        address account,
+        uint8 support,
+        string memory reason,
+        bytes memory params
+    ) internal override returns (uint256 weight) {
+        weight = super._castVote(proposalId, account, support, reason, params);
+        if (weight > 0) _stamp(account, MODULE_ID);
+    }
 
     function _propose(
         address[] memory targets,

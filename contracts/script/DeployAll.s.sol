@@ -153,7 +153,8 @@ contract DeployAll is Script {
     function _council(Town memory t, address admin, address deployer) private {
         address[] memory none = new address[](0);
         TownTimelock timelock = new TownTimelock(120, none, none, deployer);
-        TownGovernor governor = new TownGovernor(IVotes(t.votes), timelock, 60, 600, 0);
+        TownGovernor governor =
+            new TownGovernor(IVotes(t.votes), timelock, 60, 600, 0, TrustvillePassport(t.passport));
 
         timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
         timelock.grantRole(timelock.CANCELLER_ROLE(), address(governor));
@@ -193,7 +194,7 @@ contract DeployAll is Script {
     function _grants(Town memory t) private {
         if (!_selfAdmin) return;
         TrustvillePassport passport = TrustvillePassport(t.passport);
-        address[12] memory stampers = [
+        address[13] memory stampers = [
             t.products,
             t.escrow,
             t.auction,
@@ -202,6 +203,7 @@ contract DeployAll is Script {
             t.deeds,
             t.leases,
             t.treasury,
+            t.governor,
             t.charity,
             t.insurer,
             t.swap,
@@ -273,7 +275,8 @@ contract DeployAll is Script {
             console.log("  passport.grantRole(STAMPER_ROLE, x) for each of:");
             console.log("   ", t.products, t.escrow, t.auction);
             console.log("   ", t.certificates, t.tickets, t.deeds);
-            console.log("   ", t.leases, t.treasury, t.charity);
+            console.log("   ", t.leases, t.treasury, t.governor);
+            console.log("   ", t.charity);
             console.log("   ", t.insurer, t.swap, t.loans);
             console.log("  token.grantRole(MINTER_ROLE,", address(t.bank), ")");
             console.log("  passport.grantRole(STAMPER_ROLE,", address(t.bank), ")");

@@ -91,7 +91,7 @@ return (inAfterFee * reserveOut) / (reserveIn * 10_000 + inAfterFee);
 | `supply(amount)` / `withdrawSupply(shares)` | Lenders provide TVD, earn interest |
 | `depositCollateral` / `withdrawCollateral` | GRAIN in and out |
 | `borrow(amount)` | Up to `LTV_BPS` of collateral value |
-| `repay(amount)` | Interest first, folded into debt on every touch |
+| `repay(amount)` | Interest first, folded into debt on every touch. `type(uint256).max` repays all of it: interest grows between reading the debt and the block, so the figure you read is already short |
 | `liquidate(borrower, repayAmount)` | Anyone, above the threshold, for a bonus |
 | `healthFactor(who)` | Below 1e18 → liquidatable |
 

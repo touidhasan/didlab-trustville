@@ -8723,6 +8723,19 @@ export const townGovernorAbi = [
   },
   {
     "type": "function",
+    "name": "MODULE_ID",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "cancel",
     "inputs": [
       {
@@ -9264,6 +9277,19 @@ export const townGovernorAbi = [
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "passport",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract TrustvillePassport"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",

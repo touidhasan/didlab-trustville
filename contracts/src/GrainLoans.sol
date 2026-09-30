@@ -188,11 +188,16 @@ contract GrainLoans is AccessControl, Stamping {
         _stamp(msg.sender, MODULE_ID);
     }
 
+    /// Pass type(uint256).max to repay the whole debt, interest to this second included.
+    /// It is the only way to close a loan exactly: interest accrues between reading the debt
+    /// and the transaction landing, so any figure a wallet shows is already a little short.
+    /// Compound and Aave use the same convention for the same reason.
     function repay(uint256 amount) external {
         if (amount == 0) revert ZeroAmount();
         _accrue(msg.sender);
         Position storage p = _positions[msg.sender];
         if (p.debt == 0) revert NoDebt();
+        if (amount == type(uint256).max) amount = p.debt;
         if (amount > p.debt) revert RepayingTooMuch(p.debt, amount);
 
         p.debt -= amount;

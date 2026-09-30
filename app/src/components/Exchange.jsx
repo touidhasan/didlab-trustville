@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { formatUnits, parseUnits } from 'viem';
+import { formatUnits, maxUint256, parseUnits } from 'viem';
 import { grainLoansAbi, grainTokenAbi, townSwapAbi, townTokenAbi } from '../abi/generated.js';
 import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
@@ -216,11 +216,15 @@ export default function Exchange({ wallet }) {
     });
   };
 
+  // Repay "everything" with the contract's repay-all value, not the figure on screen: interest
+  // accrues between reading the debt and the block, so repaying the shown figure always left
+  // a sliver of debt -- and any debt at all hides "Withdraw collateral". Found in rehearsal.
+  // The approval carries 1% headroom for that same interest; the contract takes only what is owed.
   const repay = async () => {
     const debt = d.position[1];
     if (debt <= 0n) return;
-    if (!(await approve(token, townTokenAbi, loans, debt))) return;
-    return send({ address: loans, abi: grainLoansAbi, functionName: 'repay', args: [debt] });
+    if (!(await approve(token, townTokenAbi, loans, debt + debt / 100n + 1n))) return;
+    return send({ address: loans, abi: grainLoansAbi, functionName: 'repay', args: [maxUint256] });
   };
 
   const now = Math.floor(Date.now() / 1000);

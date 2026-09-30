@@ -70,7 +70,18 @@ export default function Insurer({ wallet }) {
 
     if (!account) return setPolicies([]);
     const ids = (await ins('policiesOf', [account])).slice(-5);
-    setPolicies(await Promise.all(ids.map(async (id) => ({ id, ...(await ins('get', [id])) }))));
+    const mine = await Promise.all(ids.map(async (id) => ({ id, ...(await ins('get', [id])) })));
+    // A policy's period can be long gone from the four periods shown above -- a week after
+    // class it is hundreds of periods back -- so read its reading directly. Without this a
+    // policy bought in class could never be settled from the site afterwards. Found in rehearsal.
+    await Promise.all(
+      mine.map(async (pol) => {
+        const [finalized, mm, count] = await ora('reading', [pol.period]);
+        const [who] = await ora('reportsOf', [pol.period]);
+        pol.reading = { finalized, mm, count, reports: who.length };
+      }),
+    );
+    setPolicies(mine);
   }, [account, period]);
 
   useEffect(() => {
@@ -221,7 +232,7 @@ export default function Insurer({ wallet }) {
             )}
 
             <form onSubmit={buy} className="post-form">
-              <input value={period} onChange={(e) => setPeriod(e.target.value)} placeholder="Period" inputMode="numeric" style={{ maxWidth: 90 }} disabled={!ready} />
+              <input value={period} onChange={(e) => setPeriod(e.target.value)} placeholder="Period" inputMode="numeric" style={{ maxWidth: 120 }} disabled={!ready} />
               <input value={coverage} onChange={(e) => setCoverage(e.target.value)} placeholder="Cover (TVD)" inputMode="decimal" style={{ maxWidth: 130 }} disabled={!ready} />
               <button className="btn" disabled={!ready || !coverage || !period}>
                 Buy cover {premiumNow > 0 ? `for ${premiumNow.toLocaleString()} TVD` : ''}
@@ -235,8 +246,9 @@ export default function Insurer({ wallet }) {
             <ul className="notices">
               {policies.length === 0 && <li className="muted">No policies yet.</li>}
               {policies.map((p) => {
-                const reading = periods.find((r) => r.p === Number(p.period));
+                const reading = p.reading;
                 const settleable = p.status === 1 && reading?.finalized;
+                const canFinalize = p.status === 1 && reading && !reading.finalized && terms && reading.reports >= Number(terms.quorum);
                 return (
                   <li key={p.id.toString()}>
                     <span>
@@ -248,8 +260,15 @@ export default function Insurer({ wallet }) {
                         Settle — the reading is in
                       </button>
                     )}
-                    {ready && p.status === 1 && !reading?.finalized && (
-                      <span className="muted small">waiting for period {String(p.period)} to be settled</span>
+                    {ready && canFinalize && (
+                      <button className="btn small-btn" onClick={() => send({ address: oracle, abi: rainOracleAbi, functionName: 'finalize', args: [p.period] })}>
+                        Settle period {String(p.period)} first
+                      </button>
+                    )}
+                    {ready && p.status === 1 && !reading?.finalized && !canFinalize && (
+                      <span className="muted small">
+                        waiting for period {String(p.period)}: {reading?.reports ?? 0} of {String(terms?.quorum ?? '?')} reports in
+                      </span>
                     )}
                   </li>
                 );

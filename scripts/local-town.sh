@@ -3,8 +3,8 @@
 #
 #   ./scripts/local-town.sh
 #
-# Starts a local chain, deploys all 22 contracts, wires them, points the site at it and
-# opens it. No faucet, no permissions, no waiting for blocks — and nothing you do touches
+# Starts a local chain, deploys the whole town (the Privacy Lab included), starts three
+# rain reporters, points the site at it and opens it. No faucet, no permissions, no waiting for blocks — and nothing you do touches
 # the public chain.
 #
 # Stop it with Ctrl-C; the chain and everything on it disappear with it.
@@ -31,6 +31,7 @@ BACKUP="$ROOT/app/.env.before-local-town"
 # chain that had been dead for days, and the site correctly reported the chain as
 # unreachable while everyone looked at the wrong end of the wire.
 cleanup() {
+  for pid in ${REPORTER_PIDS:-}; do kill "$pid" 2>/dev/null || true; done
   [ -n "${ANVIL_PID:-}" ] && kill "$ANVIL_PID" 2>/dev/null || true
   if [ -f "$ENVFILE" ] && grep -q 'written by scripts/local-town.sh' "$ENVFILE" 2>/dev/null; then
     rm -f "$ENVFILE"
@@ -65,6 +66,32 @@ echo "==> deploying the town"
 # for a receipt that will never arrive.
 env -u TOWN_ADMIN forge script script/DeployAll.s.sol \
   --rpc-url "$RPC" --broadcast --slow --private-key "$KEY"
+
+# The two things DeployAll leaves out, so the local town really is the whole town: the
+# Privacy Lab (module 16) and someone to report the weather (module 14). Without them the
+# fallback laptop in class stops two modules short.
+echo "==> the Privacy Lab"
+forge script script/DeployPrivacyLab.s.sol --rpc-url "$RPC" --broadcast --slow --private-key "$KEY" >/dev/null
+J="$ROOT/deployments/$CHAIN_ID.json"
+addr() { node -e "console.log(require(process.argv[1]).contracts[process.argv[2]])" "$J" "$1"; }
+cast send --private-key "$KEY" "$(addr TrustvillePassport)" "grantRole(bytes32,address)" \
+  "$(cast keccak STAMPER_ROLE)" "$(addr PrivacyLab)" --rpc-url "$RPC" >/dev/null
+
+echo "==> three rain reporters"
+# anvil's accounts 7, 8 and 9, derived from the phrase every anvil prints on startup —
+# public, worthless anywhere else, exactly like KEY above.
+ANVIL_WORDS="test test test test test test test test test test test junk"
+cd "$ROOT/services/rain-reporter"
+[ -d node_modules ] || npm install --silent
+REPORTER_PIDS=""
+for i in 7 8 9; do
+  rk="$(cast wallet private-key "$ANVIL_WORDS" "$i")"
+  cast send --private-key "$KEY" "$(addr RainOracle)" "grantRole(bytes32,address)" \
+    "$(cast keccak REPORTER_ROLE)" "$(cast wallet address --private-key "$rk")" --rpc-url "$RPC" >/dev/null
+  station=$([ "$i" = 7 ] && echo north || { [ "$i" = 8 ] && echo east || echo west; })
+  PRIVATE_KEY="$rk" node reporter.mjs --rpc "$RPC" --station "$station" > "/tmp/trustville-reporter-$station.log" 2>&1 &
+  REPORTER_PIDS="$REPORTER_PIDS $!"
+done
 
 echo "==> wiring the frontend"
 cd "$ROOT"

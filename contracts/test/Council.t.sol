@@ -56,8 +56,9 @@ contract CouncilTest is Test {
 
         address[] memory none = new address[](0);
         timelock = new TownTimelock(TIMELOCK_DELAY, none, none, deployer);
-        governor =
-            new TownGovernor(IVotes(address(votes)), timelock, VOTING_DELAY, VOTING_PERIOD, 0);
+        governor = new TownGovernor(
+            IVotes(address(votes)), timelock, VOTING_DELAY, VOTING_PERIOD, 0, passport
+        );
 
         timelock.grantRole(timelock.PROPOSER_ROLE(), address(governor));
         timelock.grantRole(timelock.CANCELLER_ROLE(), address(governor));
@@ -73,6 +74,7 @@ contract CouncilTest is Test {
 
         vm.startPrank(townAdmin);
         passport.grantRole(passport.STAMPER_ROLE(), address(treasury));
+        passport.grantRole(passport.STAMPER_ROLE(), address(governor));
         vm.stopPrank();
 
         for (uint256 i; i < 3; i++) {
@@ -288,6 +290,69 @@ contract CouncilTest is Test {
 
         vm.warp(block.timestamp + VOTING_PERIOD + 1);
         assertEq(uint8(governor.state(id)), uint8(IGovernor.ProposalState.Succeeded));
+    }
+
+    function test_VotingWithWeightStampsModule12() public {
+        _wrap(ana, 100 ether);
+        (uint256 id,,,) = _proposePayment(ana, 10 ether, "stamp me");
+        vm.warp(block.timestamp + VOTING_DELAY + 1);
+
+        assertFalse(passport.hasStamp(ana, 12));
+        vm.prank(ana);
+        governor.castVote(id, 1);
+        assertTrue(passport.hasStamp(ana, 12));
+    }
+
+    function test_VotingWithNoWeightEarnsNoStamp() public {
+        _wrap(ben, 100 ether);
+        vm.startPrank(ana); // wraps, never delegates: the module's classic mistake
+        token.approve(address(votes), 100 ether);
+        votes.depositFor(ana, 100 ether);
+        vm.stopPrank();
+
+        (uint256 id,,,) = _proposePayment(ben, 10 ether, "no weight, no stamp");
+        vm.warp(block.timestamp + VOTING_DELAY + 1);
+
+        vm.prank(ana);
+        governor.castVote(id, 0); // counted, with zero weight
+        assertTrue(governor.hasVoted(id, ana));
+        assertFalse(passport.hasStamp(ana, 12));
+    }
+
+    function test_ASignedVoteStampsTheVoterNotTheRelayer() public {
+        (address voter, uint256 key) = makeAddrAndKey("signer");
+        vm.prank(townAdmin);
+        registry.registerFor(voter, keccak256("signer"));
+        vm.startPrank(voter);
+        passport.mint();
+        bank.claimWelcomeGrant();
+        vm.stopPrank();
+        _wrap(voter, 100 ether);
+
+        (uint256 id,,,) = _proposePayment(voter, 10 ether, "signed vote");
+        vm.warp(block.timestamp + VOTING_DELAY + 1);
+
+        bytes32 domain = keccak256(
+            abi.encode(
+                keccak256(
+                    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                ),
+                keccak256(bytes(governor.name())),
+                keccak256(bytes(governor.version())),
+                block.chainid,
+                address(governor)
+            )
+        );
+        bytes32 ballot = keccak256(
+            abi.encode(governor.BALLOT_TYPEHASH(), id, uint8(1), voter, governor.nonces(voter))
+        );
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", domain, ballot));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(key, digest);
+        vm.prank(ben); // ben relays it and pays the gas
+        governor.castVoteBySig(id, 1, voter, abi.encodePacked(r, s, v));
+
+        assertTrue(passport.hasStamp(voter, 12));
+        assertFalse(passport.hasStamp(ben, 12));
     }
 
     function test_BuyingTokensAfterTheSnapshotDoesNotHelp() public {

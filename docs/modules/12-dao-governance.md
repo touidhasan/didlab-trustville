@@ -5,7 +5,7 @@
 | **Contracts** | `VoteToken.sol`, `TownGovernor.sol`, `TownTimelock.sol` |
 | **Stop** | Council |
 | **Standards** | ERC-20Votes, ERC-6372, OpenZeppelin Governor + TimelockController |
-| **Stamp** | none — governance stamps nobody |
+| **Stamp** | Module 12 (awarded to a **voter**, when the vote carries weight) |
 
 ## The problem
 
@@ -64,7 +64,7 @@ wrap + delegate ─▸ propose ─▸ [voting delay] ─▸ [voting period] ─�
 | Get voting power | `depositAndSelfDelegate(amount)` | Wrap **and** delegate in one transaction |
 | Propose | `propose(targets, values, calldatas, description)` | Threshold is 0 here — anyone may |
 | Wait | — | Voting delay, 60 seconds on Trustville |
-| Vote | `castVote(proposalId, support)` | 0 against, 1 for, 2 abstain |
+| Vote | `castVote(proposalId, support)` | 0 against, 1 for, 2 abstain. Stamps module 12 if your vote has weight |
 | Queue | `queue(targets, values, calldatas, descriptionHash)` | Sends it to the Timelock |
 | Wait | — | Timelock minimum delay |
 | Execute | `execute(targets, values, calldatas, descriptionHash)` | Anyone |
@@ -133,7 +133,9 @@ id for this reason — after we hit it, hard, in production.
 3. **Propose** a payment from the Timelock — target the TVD token, calldata a `transfer`.
    Keep the description text; you will need it exactly.
 4. Check `state(proposalId)`: `Pending`. Wait out the voting delay.
-5. `Active`. Cast votes from several accounts.
+5. `Active`. Cast votes from several accounts. A vote with weight stamps module 12; a vote
+   with zero weight is counted and stamps nothing, which is how you find out you skipped
+   step 2.
 6. After the voting period: `Succeeded` — or `Defeated`, or, if too few voted,
    `Defeated` on quorum, which is a good failure to cause on purpose at least once.
 7. **Queue.** Now the Timelock is holding it, and `state` is `Queued`.
@@ -151,6 +153,7 @@ Then try to break it:
 ```
 ProposalCreated(proposalId: 8471…, proposer: 0x…, targets: […], voteStart: …, voteEnd: …, description: "…")
 VoteCast(voter: 0x…, proposalId: 8471…, support: 1, weight: 500e18, reason: "")
+Stamped(tokenId: …, moduleId: 12, by: townGovernor)
 ProposalQueued(proposalId: 8471…, etaSeconds: …)
 CallScheduled(id: 0x…, index: 0, target: 0x…, value: 0, data: 0x…, predecessor: 0x0, delay: …)
 CallExecuted(id: 0x…, index: 0, target: 0x…, value: 0, data: 0x…)

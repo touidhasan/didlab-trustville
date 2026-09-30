@@ -21,6 +21,13 @@ which steps need you, and where classes tend to get stuck.
   milestones, and a property. It leaves alone anything that needs two people or a role —
   those are better done live.
 - [ ] Check the faucet holds enough TRUST for the class, and note the course code.
+- [ ] From the admin account, put money where three stops pay out of it (Bank → *Send TVD*,
+  or *Add to the pool* at the Insurer). Without it modules 11, 12 and 14 stall mid-class:
+  - the **Treasury** (module 11) — about 5 TVD per group;
+  - the **Council's Timelock** (module 12) — what passing proposals will spend;
+  - the **Insurer's pool** (module 14) — cover can only be sold against money in it.
+
+  The addresses are at the foot of each stop's panel.
 - [ ] Open the site in a fresh browser profile with a new wallet and do the warm-up yourself.
   If that fails, the class will fail the same way.
 
@@ -46,16 +53,16 @@ that account in a separate browser profile before class. Put students in pairs f
 | 2 | Town Hall · passport | | | Forgetting to mint after registering |
 | 3 | Bank · town token | Pairs for the transfer | | Sending to their own address |
 | 4 | Market · provenance | Pairs | | Transferring custody of a product they do not hold |
-| 5 | Market · escrow | Pairs | Resolve the disputed order | Two wallet prompts, *approve* then *pay*; rejecting the first looks like a failure |
+| 5 | Market · escrow | Pairs | Decide disputed orders: Admin → *Disputes waiting for you* | Two wallet prompts, *approve* then *pay*; rejecting the first looks like a failure |
 | 6 | Market · sealed-bid auction | Pairs | | **Losing the bid salt.** It lives in the browser; say so before anyone bids |
 | 7 | College · certificates | Pairs | | Issuing a certificate to themselves, which the contract refuses |
-| 8 | College · event tickets | Pairs | | A start time already in the past |
+| 8 | College · event tickets | Pairs | | An organiser has no *Buy* button on their own event: buy your partner's. Events start a week out, so proceeds are withdrawn next session |
 | 9 | Housing · property deeds | | Certify a deed (the admin holds `CERTIFIER_ROLE`) | Expecting certification to survive a transfer |
-| 10 | Housing · rent escrow | Pairs | Resolve the disputed deposit | Waiting out the term and claim window: use short ones |
-| 11 | Council · multisig treasury | Groups of three | You are one of the owners | Only owners can propose; decide the owners before class |
-| 12 | Council · DAO governance | Groups | | Wrapping tokens without delegating: zero votes |
+| 10 | Housing · rent escrow | Pairs | Decide claimed deposits: Admin → *Disputes waiting for you* | Waiting out the term and claim window: use short ones |
+| 11 | Council · multisig treasury | Groups of three | You are one of the owners: propose one small payment per group | Only owners can propose; the stamp goes to whoever presses *Execute*, once per payment |
+| 12 | Council · DAO governance | Groups | | Wrapping tokens without delegating: zero votes, and a zero-weight vote earns no stamp. Voting opens a minute after proposing |
 | 13 | Charity | Groups | Approve or reject milestones (the admin holds `ARBITER_ROLE`) | Two wallet prompts per pledge, as in module 5 |
-| 14 | Insurer and oracle | | The reporter services must be running | Buying cover for the current period, which is refused |
+| 14 | Insurer and oracle | | The reporter services must be running | Buying cover for the current period, which is refused. A policy settles after its period ends and the reports are in — it can be settled any time later from the same page |
 | 15 | Exchange | | | Large swaps and slippage: that is the lesson, not a bug |
 | 16 | Privacy Lab | Needs a module 7 certificate | | Posting from the account that enrolled; the page warns them |
 

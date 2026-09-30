@@ -22,7 +22,7 @@
  *   --drought          make the simulated weather dry, so policies pay out
  *   --once             report the last finished period and exit (for cron)
  *   --rpc <url>        default https://eth.didlab.org
- *   --oracle <addr>    default: read from deployments/252501.json
+ *   --oracle <addr>    default: read from deployments/<chain id>.json
  *
  * The key this uses is a HOT key: it sits on a machine, unlocked, signing automatically.
  * Give it gas and the reporter role and nothing else. That tiering — a hot key that can
@@ -60,27 +60,35 @@ if (!PRIVATE_KEY) {
   process.exit(1);
 }
 
-const oracleAddress =
-  flag('oracle', process.env.ORACLE) ||
-  JSON.parse(readFileSync(join(HERE, '../../deployments/252501.json'), 'utf8')).contracts.RainOracle;
-
-if (!oracleAddress) {
-  console.error('No oracle address: pass --oracle 0x… or deploy module 14 first.');
-  process.exit(1);
-}
-
 /* -------------------------------------------------------------------------- chain */
 
-const didlab = defineChain({
-  id: 252501,
-  name: 'DIDLab',
+// Ask the node which chain it is rather than assuming DIDLab, so the same reporter serves
+// a local town (npm run local), a training town, or DIDLab itself.
+const CHAIN_ID = await createPublicClient({ transport: http(RPC) }).getChainId();
+const chain = defineChain({
+  id: CHAIN_ID,
+  name: CHAIN_ID === 252501 ? 'DIDLab' : `chain ${CHAIN_ID}`,
   nativeCurrency: { name: 'Trust', symbol: 'TRUST', decimals: 18 },
   rpcUrls: { default: { http: [RPC] } },
 });
 
+const deployed = () => {
+  try {
+    return JSON.parse(readFileSync(join(HERE, `../../deployments/${CHAIN_ID}.json`), 'utf8')).contracts.RainOracle;
+  } catch {
+    return null;
+  }
+};
+const oracleAddress = flag('oracle', process.env.ORACLE) || deployed();
+
+if (!oracleAddress) {
+  console.error(`No oracle address for chain ${CHAIN_ID}: pass --oracle 0x… or deploy module 14 first.`);
+  process.exit(1);
+}
+
 const account = privateKeyToAccount(PRIVATE_KEY);
-const publicClient = createPublicClient({ chain: didlab, transport: http(RPC) });
-const wallet = createWalletClient({ account, chain: didlab, transport: http(RPC) });
+const publicClient = createPublicClient({ chain, transport: http(RPC) });
+const wallet = createWalletClient({ account, chain, transport: http(RPC) });
 
 const abi = [
   { type: 'function', name: 'currentPeriod', inputs: [], outputs: [{ type: 'uint32' }], stateMutability: 'view' },

@@ -155,6 +155,27 @@ contract LoansTest is Test {
         assertEq(grain.balanceOf(borrower), 200 ether);
     }
 
+    function test_RepayAllClosesTheLoanDespiteInterest() public {
+        _farm(borrower, 2);
+        vm.startPrank(borrower);
+        loans.depositCollateral(200 ether);
+        loans.borrow(50 ether);
+        vm.warp(block.timestamp + 1 days); // interest has accrued since anyone read the debt
+
+        (, uint256 shown) = loans.positionOf(borrower);
+        vm.expectRevert(); // a wei over what is owed is refused, so "the figure plus a bit" cannot work
+        loans.repay(shown + 1);
+
+        tvd.approve(address(loans), type(uint256).max);
+        loans.repay(type(uint256).max);
+        loans.withdrawCollateral(200 ether);
+        vm.stopPrank();
+
+        (uint256 collateral, uint256 debt) = loans.positionOf(borrower);
+        assertEq(debt, 0);
+        assertEq(collateral, 0);
+    }
+
     function test_CannotWithdrawCollateralThatIsHoldingUpALoan() public {
         _farm(borrower, 2);
         vm.startPrank(borrower);

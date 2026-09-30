@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { keccak256, parseEther, stringToHex } from 'viem';
+import { formatEther, keccak256, parseEther, stringToHex } from 'viem';
 import {
   cropInsuranceAbi,
   grainLoansAbi,
   grainTokenAbi,
   propertyDeedsAbi,
   rainOracleAbi,
+  rentEscrowAbi,
   residentRegistryAbi,
   townBankAbi,
+  townEscrowAbi,
   townTokenAbi,
 } from '../abi/generated.js';
 import { contracts, explorerAddress, publicClient } from '../chain.js';
@@ -308,6 +310,107 @@ function Setting({ item, address, ready, send }) {
   );
 }
 
+const short = (a) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+const tvd = (v) => `${Number(formatEther(v)).toLocaleString()} TVD`;
+const DISPUTED = 4; // TownEscrow.State.Disputed
+const CLAIMED = 3; // RentEscrow.State.Claimed
+const SCAN = 60n; // how far back to look; a class makes far fewer than this between sessions
+
+/**
+ * Modules 5 and 10 end, when someone disagrees, at a person: the arbiter. Without this
+ * panel the only way to decide a dispute was a raw contract call with the admin key, which
+ * the key's owner rightly refuses to paste anywhere — so disputed orders and deposits sat
+ * frozen. Found in rehearsal.
+ */
+function Disputes({ ready, send, refreshKey }) {
+  const [orders, setOrders] = useState([]);
+  const [claims, setClaims] = useState([]);
+  const [split, setSplit] = useState({});
+
+  useEffect(() => {
+    const read = (address, abi, functionName, args) =>
+      publicClient.readContract({ address, abi, functionName, args });
+    const recent = async (address, abi) => {
+      const n = await read(address, abi, 'count');
+      const ids = [];
+      for (let i = n; i > 0n && i > n - SCAN; i--) ids.push(i);
+      return Promise.all(ids.map(async (id) => ({ id, ...(await read(address, abi, 'get', [id])) })));
+    };
+    (async () => {
+      if (contracts.TownEscrow) {
+        setOrders((await recent(contracts.TownEscrow, townEscrowAbi)).filter((o) => o.state === DISPUTED));
+      }
+      if (contracts.RentEscrow) {
+        setClaims((await recent(contracts.RentEscrow, rentEscrowAbi)).filter((l) => l.state === CLAIMED));
+      }
+    })().catch(() => {});
+  }, [refreshKey]);
+
+  if (!contracts.TownEscrow && !contracts.RentEscrow) return null;
+  const decideOrder = (id, paySeller) =>
+    send({ address: contracts.TownEscrow, abi: townEscrowAbi, functionName: 'resolve', args: [id, paySeller] });
+  const decideClaim = (l) => {
+    const raw = split[l.id] ?? formatEther(l.claimAmount);
+    let toLandlord;
+    try {
+      toLandlord = parseEther(raw);
+    } catch {
+      return;
+    }
+    send({ address: contracts.RentEscrow, abi: rentEscrowAbi, functionName: 'resolveClaim', args: [l.id, toLandlord] });
+  };
+
+  return (
+    <div className="module">
+      <h3>Disputes waiting for you</h3>
+      <p className="muted small">
+        You hold <code>ARBITER_ROLE</code> on the escrow (module 5) and the rent escrow (module 10). Read both sides
+        before deciding: the contract cannot tell whether a box arrived empty or a window was already broken.
+      </p>
+      <ul className="notices">
+        {orders.length === 0 && claims.length === 0 && <li className="muted">Nothing disputed.</li>}
+        {orders.map((o) => (
+          <li key={`o${o.id}`}>
+            <span>
+              <b>Order #{o.id.toString()}</b> · {tvd(o.amount)} · buyer {short(o.buyer)} disputes paying seller{' '}
+              {short(o.seller)}
+            </span>
+            <span className="row">
+              <button className="btn small-btn" disabled={!ready} onClick={() => decideOrder(o.id, true)}>
+                Pay the seller
+              </button>
+              <button className="btn btn-ghost small-btn" disabled={!ready} onClick={() => decideOrder(o.id, false)}>
+                Refund the buyer
+              </button>
+            </span>
+          </li>
+        ))}
+        {claims.map((l) => (
+          <li key={`l${l.id}`}>
+            <span>
+              <b>Lease #{l.id.toString()}</b> · landlord {short(l.landlord)} claims {tvd(l.claimAmount)} of the{' '}
+              {tvd(l.deposit)} deposit from tenant {short(l.tenant)}: “{l.claimReason}”
+            </span>
+            <span className="row">
+              <input
+                value={split[l.id] ?? formatEther(l.claimAmount)}
+                onChange={(e) => setSplit((s) => ({ ...s, [l.id]: e.target.value }))}
+                inputMode="decimal"
+                aria-label="TVD to the landlord"
+                style={{ maxWidth: 110 }}
+              />
+              <span className="muted small">TVD to the landlord, the rest to the tenant</span>
+              <button className="btn small-btn" disabled={!ready} onClick={() => decideClaim(l)}>
+                Decide
+              </button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function Admin({ wallet }) {
   const { account } = wallet;
   const [isAdmin, setIsAdmin] = useState(false);
@@ -456,6 +559,8 @@ export default function Admin({ wallet }) {
               </p>
             )}
           </div>
+
+          <Disputes ready={ready} send={send} refreshKey={`${tx?.hash ?? ''}:${tx?.status ?? ''}`} />
 
           {SETTINGS.filter((s) => contracts[s.contract]).map((s) => (
             <Setting
