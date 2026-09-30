@@ -1,0 +1,1 @@
+import{W as s,j as r,X as a}from"./index-Cjee4Q9y.js";function i({ids:l}){const n=l.filter(e=>s[e]);return n.length===0?null:r.jsxs("p",{className:"guide-links",children:[r.jsx("span",{className:"guide-links-label",children:"Read first"}),n.map(e=>r.jsxs("a",{href:a(s[e].slug),target:"_blank",rel:"noreferrer",children:[e," · ",s[e].title]},e))]})}export{i as G};
