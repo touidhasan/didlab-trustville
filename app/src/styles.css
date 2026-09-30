@@ -261,7 +261,8 @@ p { margin: 0 0 0.8em; }
   .neighbour, .neighbour-next { min-width: 0; text-align: left; margin-left: 0; }
 }
 
-.stop-badge { margin-left: 8px; }
+.stop-badge { margin-left: 8px; display: inline-block; }
+.nowrap { white-space: nowrap; }
 /* The page's own h1 already names the stop; the panel's heading stays for screen readers
    (so the outline reads h1 → h2 → h3) but is not shown twice. */
 .stop-body > section.card > .card-head > h2:first-child {

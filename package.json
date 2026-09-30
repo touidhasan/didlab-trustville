@@ -6,7 +6,7 @@
   "scripts": {
     "setup": "npm --prefix app install",
     "dev": "npm --prefix app run dev",
-    "build": "npm --prefix app run build && npm run docs:site",
+    "build": "node scripts/check-deployments.mjs && npm --prefix app run build && npm run docs:site",
     "preview": "npm --prefix app run preview",
     "sync-abi": "node scripts/sync-abi.mjs",
     "local": "./scripts/local-town.sh",

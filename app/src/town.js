@@ -1,4 +1,3 @@
-import { contracts } from './chain.js';
 import { MODULES } from './modules.js';
 
 /**
@@ -118,7 +117,8 @@ export function moduleNumbers(stop) {
   return `${m[0]}–${m[m.length - 1]}`;
 }
 
-export const isOpen = (stop) => Boolean(contracts[stop.contract]);
+/** Open when this chain's deployments file has the stop's contract. */
+export const isOpen = (stop, contracts) => Boolean(contracts[stop.contract]);
 
 export function neighbours(slug) {
   const i = STOPS.findIndex((s) => s.slug === slug);

@@ -1,3 +1,4 @@
+import { contracts } from '../chain.js';
 import { useStamps } from '../progress.js';
 import { to } from '../router.js';
 import { STOPS, isOpen, moduleNumbers, moduleRange, moduleTitle, stopOfModule } from '../town.js';
@@ -10,7 +11,7 @@ export function StopGrid({ stamps = new Set(), compact = false }) {
   return (
     <ol className={`stops ${compact ? 'stops-compact' : ''}`}>
       {STOPS.map((s) => {
-        const open = isOpen(s);
+        const open = isOpen(s, contracts);
         const earned = s.modules.filter((m) => stamps.has(m)).length;
         const complete = s.modules.length > 0 && earned === s.modules.length;
         return (
@@ -23,7 +24,7 @@ export function StopGrid({ stamps = new Set(), compact = false }) {
                 <div>
                   <h3>{s.name}</h3>
                   <p className="muted small">
-                    {moduleRange(s)}
+                    <span className="nowrap">{moduleRange(s)}</span>
                     {!open && <span className="badge stop-badge">Not open here</span>}
                   </p>
                 </div>
