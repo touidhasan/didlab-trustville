@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const bank = contracts.TownBank;
 const token = contracts.TownToken;
@@ -54,7 +55,7 @@ export default function Bank({ wallet }) {
         <div className="card-head">
           <h2>Bank</h2>
         </div>
-        <p className="notice-empty">Not deployed yet — deploy the town contracts first.</p>
+        <NotDeployed what="The Bank" script="script/DeployTown.s.sol" />
       </section>
     );
   }

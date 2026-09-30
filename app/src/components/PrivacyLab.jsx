@@ -7,6 +7,7 @@ import { commitmentOf, nullifierOf, randomSecret } from '../zk/tree.js';
 import { buildProof, hashSignal, preload } from '../zk/prove.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const lab = contracts.PrivacyLab;
 const certs = contracts.CertificateRegistry;
@@ -283,10 +284,7 @@ export default function PrivacyLab({ wallet }) {
           <h2>The Privacy Lab</h2>
           <GuideLinks ids={[16]} />
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: build the circuit with <span className="mono">npm run circuit</span>, then
-          run <span className="mono">script/DeployPrivacyLab.s.sol</span>.
-        </p>
+        <NotDeployed what="The Privacy Lab" script="script/DeployPrivacyLab.s.sol" extra="Build the circuit first: npm run circuit." />
       </section>
     );
   }

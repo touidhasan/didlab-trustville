@@ -4,6 +4,7 @@ import { contracts, explorerAddress, publicClient } from '../chain.js';
 import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const address = contracts.TownNoticeBoard;
 
@@ -64,10 +65,7 @@ export default function NoticeBoard({ wallet }) {
       </div>
 
       {!address ? (
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployNoticeBoard.s.sol</span> and add the
-          address to <span className="mono">deployments/252501.json</span>.
-        </p>
+        <NotDeployed what="The Notice Board" script="script/DeployNoticeBoard.s.sol" />
       ) : (
         <div className="board">
           <div>

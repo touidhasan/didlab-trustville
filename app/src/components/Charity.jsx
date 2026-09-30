@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const charity = contracts.TownCharity;
 const token = contracts.TownToken;
@@ -74,9 +75,7 @@ export default function Charity({ wallet }) {
         <div className="card-head">
           <h2>Charity</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployCharity.s.sol</span>.
-        </p>
+        <NotDeployed what="The Charity" script="script/DeployCharity.s.sol" />
       </section>
     );
   }

@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const grain = contracts.GrainToken;
 const swap = contracts.TownSwap;
@@ -113,9 +114,7 @@ export default function Exchange({ wallet }) {
         <div className="card-head">
           <h2>Exchange</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployDefi.s.sol</span>.
-        </p>
+        <NotDeployed what="The Exchange" script="script/DeployDefi.s.sol" />
       </section>
     );
   }

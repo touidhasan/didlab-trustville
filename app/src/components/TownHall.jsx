@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const registry = contracts.ResidentRegistry;
 const passport = contracts.TrustvillePassport;
@@ -66,9 +67,7 @@ export default function TownHall({ wallet }) {
         <div className="card-head">
           <h2>Town Hall</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployTown.s.sol</span>.
-        </p>
+        <NotDeployed what="The Town Hall" script="script/DeployTown.s.sol" />
       </section>
     );
   }

@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const certs = contracts.CertificateRegistry;
 const tickets = contracts.EventTickets;
@@ -73,9 +74,7 @@ export default function College({ wallet }) {
         <div className="card-head">
           <h2>College</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployCollege.s.sol</span>.
-        </p>
+        <NotDeployed what="The College" script="script/DeployCollege.s.sol" />
       </section>
     );
   }

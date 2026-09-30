@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const registry = contracts.ProductRegistry;
 const escrow = contracts.TownEscrow;
@@ -107,9 +108,7 @@ export default function Market({ wallet }) {
         <div className="card-head">
           <h2>Market</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployMarket.s.sol</span>.
-        </p>
+        <NotDeployed what="The Market" script="script/DeployMarket.s.sol" />
       </section>
     );
   }

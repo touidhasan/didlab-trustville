@@ -20,6 +20,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const treasury = contracts.TownTreasury;
 const governor = contracts.TownGovernor;
@@ -162,9 +163,7 @@ export default function Council({ wallet }) {
         <div className="card-head">
           <h2>Council</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployCouncil.s.sol</span>.
-        </p>
+        <NotDeployed what="The Council" script="script/DeployCouncil.s.sol" />
       </section>
     );
   }

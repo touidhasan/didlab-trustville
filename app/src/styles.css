@@ -160,12 +160,29 @@ p { margin: 0 0 0.8em; }
 .notices li .row { margin-top: 4px; }
 
 /* town map */
-.stops { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-.stop { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
-.stop-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.stop h3 { font-size: 1.05rem; }
-.stop-problem { color: var(--ink-2); }
-.stop ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.92rem; }
+.stops { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); list-style: none; margin: 0; padding: 0; }
+.stops-compact { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.stop { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+.stop:hover { border-color: var(--amber); }
+.stop-done { border-color: rgba(31, 138, 76, 0.45); }
+.stop-link { display: block; padding: 18px; text-decoration: none; color: inherit; height: 100%; }
+.stop-link:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; border-radius: var(--radius); }
+.stops-compact .stop-link { padding: 14px; }
+.stop-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.stop-top > div { flex: 1; }
+.stop-top .muted { margin: 0; }
+.stop-num {
+  flex: none; min-width: 44px; height: 36px; padding: 0 8px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--navy); color: #fff; font-weight: 700; font-size: 0.9rem;
+}
+.stop-done .stop-num { background: var(--green); }
+.stop h3 { font-size: 1.05rem; margin: 0; }
+.stop-problem { color: var(--ink-2); margin-bottom: 8px; }
+.stops-compact .stop-problem { font-size: 0.92rem; margin: 0; }
+.stop-modules { list-style: none; margin: 0; padding: 0; color: var(--muted); font-size: 0.92rem; }
+.stop-modules li { padding: 2px 0; }
+.stop-modules li.earned { color: var(--green); }
+.stop-modules li.earned::after { content: ' ✓'; }
 .badge {
   font-size: 0.72rem; font-weight: 600; white-space: nowrap; padding: 2px 8px; border-radius: 999px;
   background: rgba(245, 165, 36, 0.15); color: var(--amber-ink);
@@ -204,3 +221,49 @@ p { margin: 0 0 0.8em; }
 }
 .zk details { margin-top: 8px; }
 .zk details summary { cursor: pointer; color: var(--muted); }
+
+
+/* navigation: header links, breadcrumbs, previous/next */
+.topnav { display: flex; gap: 18px; margin-left: auto; margin-right: 16px; font-size: 0.92rem; }
+.topnav a { text-decoration: none; color: #d3d9e6; }
+.topnav a:hover, .topnav a[aria-current='page'] { color: #fff; text-decoration: underline; }
+.crumbs { color: var(--muted); }
+.crumbs a { color: var(--ink-2); }
+.stop-head h1, .map-head h1 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); margin-bottom: 0.25em; }
+.stop-head .eyebrow, .map-head .eyebrow { color: var(--amber-ink); margin-bottom: 4px; }
+.stop-problem-lead { font-size: 1.1rem; color: var(--ink-2); max-width: 720px; }
+.setup-nudge { padding: 12px 16px; border-radius: 10px; background: rgba(245, 165, 36, 0.12); border: 1px solid rgba(245, 165, 36, 0.35); }
+.neighbours { display: flex; justify-content: space-between; gap: 16px; }
+.neighbour {
+  display: grid; gap: 2px; padding: 14px 18px; min-width: 200px; text-decoration: none;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.neighbour:hover { border-color: var(--amber); }
+.neighbour-next { text-align: right; margin-left: auto; }
+
+/* map page progress */
+.progress { display: grid; gap: 10px; }
+.progress-bar { height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; max-width: 520px; }
+.progress-bar span { display: block; height: 100%; background: var(--green); }
+
+/* landing */
+.how { margin: 0; padding-left: 22px; display: grid; gap: 12px; }
+.how li { display: grid; gap: 2px; }
+.who { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.who h3 { font-size: 1rem; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .topnav { gap: 12px; margin-right: 8px; }
+  .topbar-inner { flex-wrap: wrap; height: auto; padding-top: 10px; padding-bottom: 10px; }
+  .neighbours { flex-direction: column; }
+  .neighbour, .neighbour-next { min-width: 0; text-align: left; margin-left: 0; }
+}
+
+.stop-badge { margin-left: 8px; }
+/* The page's own h1 already names the stop; the panel's heading stays for screen readers
+   (so the outline reads h1 → h2 → h3) but is not shown twice. */
+.stop-body > section.card > .card-head > h2:first-child {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}

@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const deeds = contracts.PropertyDeeds;
 const leases = contracts.RentEscrow;
@@ -72,9 +73,7 @@ export default function Housing({ wallet }) {
         <div className="card-head">
           <h2>Housing</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployHousing.s.sol</span>.
-        </p>
+        <NotDeployed what="Housing" script="script/DeployHousing.s.sol" />
       </section>
     );
   }

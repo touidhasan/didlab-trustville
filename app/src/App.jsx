@@ -1,157 +1,164 @@
-import Admin from './components/Admin.jsx';
-import Bank from './components/Bank.jsx';
-import ChainStatus from './components/ChainStatus.jsx';
-import Charity from './components/Charity.jsx';
-import College from './components/College.jsx';
-import Council from './components/Council.jsx';
-import Exchange from './components/Exchange.jsx';
-import Housing from './components/Housing.jsx';
-import Insurer from './components/Insurer.jsx';
-import Market from './components/Market.jsx';
-import NoticeBoard from './components/NoticeBoard.jsx';
-import Onboarding from './components/Onboarding.jsx';
-import PrivacyLab from './components/PrivacyLab.jsx';
-import TownHall from './components/TownHall.jsx';
-import TownMap from './components/TownMap.jsx';
+import { lazy, Suspense, useEffect } from 'react';
+import { useIsAdmin } from './admin.js';
+import { BRAND } from './brand.js';
 import { EXPLORER, FAUCET_URL, guideUrl } from './chain.js';
-import { MODULES, MODULE_INDEX } from './modules.js';
+import ChainStatus from './components/ChainStatus.jsx';
+import Landing from './components/Landing.jsx';
+import Onboarding from './components/Onboarding.jsx';
+import StopPage from './components/StopPage.jsx';
+import TownMap from './components/TownMap.jsx';
+import { MODULE_INDEX } from './modules.js';
+import { to, useRoute } from './router.js';
+import { STOP_BY_SLUG, STOPS } from './town.js';
 import { useWallet } from './wallet.js';
 
-const REPO = 'https://github.com/touidhasan/didlab-trustville';
+/**
+ * Each stop's code is loaded only when someone opens that stop. The whole town used to
+ * mount on one page, so opening the site meant every panel reading the chain at once.
+ */
+const STOP_COMPONENTS = {
+  'notice-board': lazy(() => import('./components/NoticeBoard.jsx')),
+  'town-hall': lazy(() => import('./components/TownHall.jsx')),
+  bank: lazy(() => import('./components/Bank.jsx')),
+  market: lazy(() => import('./components/Market.jsx')),
+  college: lazy(() => import('./components/College.jsx')),
+  housing: lazy(() => import('./components/Housing.jsx')),
+  council: lazy(() => import('./components/Council.jsx')),
+  charity: lazy(() => import('./components/Charity.jsx')),
+  insurer: lazy(() => import('./components/Insurer.jsx')),
+  exchange: lazy(() => import('./components/Exchange.jsx')),
+  'privacy-lab': lazy(() => import('./components/PrivacyLab.jsx')),
+};
+const Admin = lazy(() => import('./components/Admin.jsx'));
+
+// A stop added to town.js without a component, or the other way round, is a bug worth
+// hearing about in development rather than as a blank page in class.
+if (import.meta.env.DEV) {
+  for (const s of STOPS) if (!STOP_COMPONENTS[s.slug]) console.error(`No component for stop "${s.slug}"`);
+}
+
+function StartPage({ wallet }) {
+  const ready = wallet.account && wallet.onDidlab && wallet.balance > 0n;
+  return (
+    <div className="wrap stack">
+      <header className="stop-head">
+        <p className="eyebrow">Before the first stop</p>
+        <h1>Get ready</h1>
+        <p className="stop-problem-lead">Every stop needs a wallet on this chain and a little test currency for gas.</p>
+      </header>
+      <Onboarding wallet={wallet} />
+      {ready && (
+        <p className="row">
+          <a className="btn" href={to('notice-board')}>
+            Go to the warm-up
+          </a>
+          <a className="btn btn-ghost" href={to('map')}>
+            See the town map
+          </a>
+        </p>
+      )}
+    </div>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="wrap stack">
+      <section className="card">
+        <h2>There is no such place in town</h2>
+        <p className="muted">
+          The link may be from an older version of the site. <a href={to('map')}>The town map</a> has every stop.
+        </p>
+      </section>
+    </div>
+  );
+}
 
 export default function App() {
   const wallet = useWallet();
+  const isAdmin = useIsAdmin(wallet.account);
+  const [page] = useRoute();
+  const stop = STOP_BY_SLUG[page];
+
+  useEffect(() => {
+    const where = stop ? stop.name : page === 'map' ? 'Town map' : page === 'start' ? 'Wallet setup' : null;
+    document.title = where ? `${where} · ${BRAND.name}` : `${BRAND.name} — ${BRAND.operator}`;
+  }, [page, stop]);
+
+  let body;
+  if (!page) body = <Landing wallet={wallet} />;
+  else if (page === 'start') body = <StartPage wallet={wallet} />;
+  else if (page === 'map') body = <TownMap wallet={wallet} />;
+  else if (page === 'admin')
+    body = (
+      <div className="wrap stack">
+        <Suspense fallback={<div className="card muted">Loading…</div>}>
+          <Admin wallet={wallet} />
+        </Suspense>
+        {!isAdmin && (
+          <p className="muted">
+            This page is for the town admin. Every action on it is checked by the contracts themselves, so connect a
+            different account and they will refuse — try it.
+          </p>
+        )}
+      </div>
+    );
+  else if (stop) {
+    const Stop = STOP_COMPONENTS[stop.slug];
+    body = (
+      <StopPage stop={stop} wallet={wallet}>
+        <Stop wallet={wallet} />
+      </StopPage>
+    );
+  } else body = <NotFound />;
 
   return (
     <>
       <header className="topbar">
         <div className="wrap topbar-inner">
-          <a className="brand" href="#">
+          <a className="brand" href={to()}>
             <img src="/favicon.svg" alt="" width="26" height="26" />
-            Trustville
+            {BRAND.name}
           </a>
+          <nav className="topnav" aria-label="Main">
+            <a href={to('map')} aria-current={page === 'map' ? 'page' : undefined}>
+              Town map
+            </a>
+            <a href={guideUrl(MODULE_INDEX)} target="_blank" rel="noreferrer">
+              Guides
+            </a>
+            {isAdmin && (
+              <a href={to('admin')} aria-current={page === 'admin' ? 'page' : undefined}>
+                Admin
+              </a>
+            )}
+          </nav>
           <ChainStatus />
         </div>
       </header>
 
-      <main>
-        <section className="hero">
-          <div className="wrap">
-            <p className="eyebrow">DIDLab blockchain showcase</p>
-            <h1>A small town where trust is built into the infrastructure.</h1>
-            <p className="lead">
-              Trustville has a market, a college, a housing office and a town council. Each one has a trust problem
-              people usually solve with paperwork or middlemen. Walk through the town, solve each problem with a
-              blockchain feature, and check every step yourself on the explorer.
-            </p>
-            <div className="row">
-              <a className="btn" href="#start">
-                Get started
-              </a>
-              <a className="btn btn-ghost-light" href={guideUrl(MODULE_INDEX)} target="_blank" rel="noreferrer">
-                Read the guides
-              </a>
-              <a className="btn btn-ghost-light" href={REPO} target="_blank" rel="noreferrer">
-                Read the code
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <div className="wrap stack">
-          <section className="card learn" id="learn">
-            <div className="card-head">
-              <h2>How to learn from this town</h2>
-              <p className="muted">
-                Pressing the buttons takes an afternoon. Understanding why each contract is shaped the way it
-                is takes rather longer, and that is the part worth having — so every module has a written
-                guide, and every stop below links to its own.
-              </p>
-            </div>
-
-            <div className="board">
-              <div>
-                <div className="module">
-                  <h3>Each guide answers the same questions</h3>
-                  <p className="muted small">
-                    What the trust problem is. The one idea the module turns on. The two or three lines of
-                    Solidity that carry the design. What to do here, in order, and which events to look for on
-                    the explorer. <strong>When a plain database would have been the better choice.</strong> And
-                    what the contract did <strong>not</strong> fix — every module has a section on that,
-                    because knowing exactly where the guarantee stops is most of the skill.
-                  </p>
-                </div>
-
-                <div className="module">
-                  <h3>Suggested order</h3>
-                  <p className="muted small">
-                    Read the guide, walk the stop, then read the "what this does not fix" section again with
-                    the transaction in front of you. Modules build on each other: several of them take an
-                    earlier module's stated limitation as their starting problem.
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <div className="module">
-                  <h3>All sixteen guides</h3>
-                  <p className="guide-links">
-                    {Object.entries(MODULES).map(([id, m]) => (
-                      <a key={id} href={guideUrl(m.slug)} target="_blank" rel="noreferrer">
-                        {id} · {m.title}
-                      </a>
-                    ))}
-                  </p>
-                  <p className="muted small">
-                    Module 15 ships a <strong>deliberate vulnerability</strong> and a test that exploits it
-                    successfully. Read its guide before its code. Module 16 proves something without revealing
-                    it — and its guide spends as much space on what the proof does <strong>not</strong> hide.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <Onboarding wallet={wallet} />
-          <TownHall wallet={wallet} />
-          <Bank wallet={wallet} />
-          <Exchange wallet={wallet} />
-          <Market wallet={wallet} />
-          <College wallet={wallet} />
-          <Housing wallet={wallet} />
-          <Council wallet={wallet} />
-          <Charity wallet={wallet} />
-          <Insurer wallet={wallet} />
-          <PrivacyLab wallet={wallet} />
-          <NoticeBoard wallet={wallet} />
-          <Admin wallet={wallet} />
-          <TownMap />
-
-          <section className="card honest">
-            <h2>Good to know: this is a permissioned chain</h2>
-            <p>
-              DIDLab runs Hyperledger Besu with QBFT consensus and four known validators. Blocks are final right away
-              and gas is free (TRUST comes from a faucet). Public chains like Ethereum differ: anyone can validate,
-              finality takes minutes, and gas costs real money. The contracts here would run on either, but the
-              trust model is not the same.
-            </p>
-          </section>
-        </div>
-      </main>
+      <main>{body}</main>
 
       <footer className="footer">
         <div className="wrap footer-inner">
-          <span>Trustville · DIDLab · MIT licensed</span>
+          <span>
+            {BRAND.name} · {BRAND.operator} · MIT licensed
+          </span>
           <span className="row">
-            <a href={EXPLORER} target="_blank" rel="noreferrer">
-              Explorer
+            {EXPLORER && (
+              <a href={EXPLORER} target="_blank" rel="noreferrer">
+                Explorer
+              </a>
+            )}
+            {FAUCET_URL && (
+              <a href={FAUCET_URL} target="_blank" rel="noreferrer">
+                Faucet
+              </a>
+            )}
+            <a href={BRAND.repo} target="_blank" rel="noreferrer">
+              Code
             </a>
-            <a href={FAUCET_URL} target="_blank" rel="noreferrer">
-              Faucet
-            </a>
-            <a href={REPO} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
+            {BRAND.contactEmail && <a href={`mailto:${BRAND.contactEmail}`}>Contact</a>}
           </span>
         </div>
       </footer>

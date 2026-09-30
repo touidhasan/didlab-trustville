@@ -6,6 +6,7 @@ import { useRefresh } from '../refresh.js';
 import { runTx } from '../tx.js';
 import GuideLinks from './GuideLinks.jsx';
 import TxPanel from './TxPanel.jsx';
+import NotDeployed from './NotDeployed.jsx';
 
 const oracle = contracts.RainOracle;
 const insurer = contracts.CropInsurance;
@@ -87,9 +88,7 @@ export default function Insurer({ wallet }) {
         <div className="card-head">
           <h2>Insurer</h2>
         </div>
-        <p className="notice-empty">
-          Not deployed yet. Instructor: run <span className="mono">script/DeployInsurer.s.sol</span>.
-        </p>
+        <NotDeployed what="The Insurer" script="script/DeployInsurer.s.sol" />
       </section>
     );
   }
