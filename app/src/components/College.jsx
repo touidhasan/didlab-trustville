@@ -46,7 +46,13 @@ export default function College({ wallet }) {
     const mine = account
       ? await Promise.all(ids.map((id) => read(tickets, eventTicketsAbi, 'balanceOf', [account, id])))
       : ids.map(() => 0n);
-    setEvents(rows.map((e, i) => ({ id: ids[i], mine: mine[i], ...e })));
+    // A refund goes to whoever PAID, not whoever holds the ticket now -- so the button has to
+    // follow paidBy, not the balance. Showing it on the balance offered "Refund me" to people
+    // the contract would refuse (NothingToRefund), including an organiser who bought nothing.
+    const paid = account
+      ? await Promise.all(ids.map((id) => read(tickets, eventTicketsAbi, 'paidBy', [id, account])))
+      : ids.map(() => 0n);
+    setEvents(rows.map((e, i) => ({ id: ids[i], mine: mine[i], paid: paid[i], ...e })));
 
     if (!account) return;
     const [holdIds, issuedIds] = await Promise.all([
@@ -300,10 +306,15 @@ export default function College({ wallet }) {
                             Redeem 1
                           </button>
                         )}
-                        {ev.cancelled && ev.mine >= 0n && (
+                        {ev.cancelled && ev.paid > 0n && (
                           <button className="btn small-btn" onClick={() => ticketAction(ev.id, 'refund')}>
-                            Refund me
+                            Refund my {tvd(ev.paid)}
                           </button>
+                        )}
+                        {ev.cancelled && ev.paid === 0n && ev.mine > 0n && (
+                          <span className="muted small">
+                            You hold {ev.mine.toString()} but did not pay for them: the refund goes to whoever paid.
+                          </span>
                         )}
                         {mineEvent && !ev.cancelled && !started && (
                           <button className="btn btn-ghost small-btn" onClick={() => ticketAction(ev.id, 'cancel')}>
